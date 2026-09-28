@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Unit Comparison — Revenue Dashboards</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    color-scheme: light;
+    --page:#f4f6fb; --surface:#fff; --text-1:#1a2130; --text-muted:#64748b; --border:rgba(15,23,42,0.08);
+    --s1:#1c7293; --s2:#16a34a; --s3:#f4a300; --accent2:#0b3d59;
+    --shadow: 0 1px 2px rgba(11,11,11,.04), 0 6px 20px rgba(11,11,11,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ color-scheme: dark; --page:#0d0d0d; --surface:#201f1e; --text-1:#fff; --text-muted:#9aa5b1; --border:rgba(255,255,255,.1); }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--text-1);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 22px 60px;}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--text-muted);font-size:13px;margin:0 0 28px;}
+  .unit-links{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+  .unit-links a{font-size:12.5px;font-weight:700;color:var(--s1);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:999px;}
+  table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:32px;}
+  th,td{text-align:left;padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700;}
+  td.num{font-variant-numeric:tabular-nums;font-weight:600;}
+  .nodata{color:var(--text-muted);font-style:italic;}
+  .chart-card{background:var(--surface);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:24px;}
+  .chart-card h2{font-size:14px;margin:0 0 14px;}
+  canvas{max-height:320px;}
+  .foot{font-size:11.5px;color:var(--text-muted);margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Unit Comparison</h1>
+  <p class="sub">Live figures pulled directly from each unit's own dashboard — nothing is duplicated or re-entered here.</p>
+  <div class="unit-links">
+    <a href="../../ehrc-revenue-dashboard/">Open EHRC dashboard →</a>
+    <a href="../../ehbr-revenue-dashboard/">Open EHBR dashboard →</a>
+    <a href="../../ehin-revenue-dashboard/">Open EHIN dashboard →</a>
+  </div>
+
+  <table id="summaryTable">
+    <thead><tr><th>Unit</th><th>IP Revenue</th><th>Collection %</th><th>ALOS</th><th>Occupancy %</th><th>ARPOB (Daily)</th></tr></thead>
+    <tbody id="summaryBody"><tr><td colspan="6" class="nodata">Loading…</td></tr></tbody>
+  </table>
+
+  <div class="chart-card">
+    <h2>IP Revenue by unit</h2>
+    <canvas id="revChart"></canvas>
+  </div>
+  <div class="chart-card">
+    <h2>Collection % by unit</h2>
+    <canvas id="collChart"></canvas>
+  </div>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+(function(){
+  var UNITS = [
+    { key:'ehrc', label:'EHRC', path:'../../ehrc-revenue-dashboard/' },
+    { key:'ehbr', label:'EHBR', path:'../../ehbr-revenue-dashboard/' },
+    { key:'ehin', label:'EHIN', path:'../../ehin-revenue-dashboard/' }
+  ];
+
+  function inr(n){
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    if (Math.abs(n) >= 1e7) return '₹' + (n/1e7).toFixed(2) + ' Cr';
+    if (Math.abs(n) >= 1e5) return '₹' + (n/1e5).toFixed(2) + ' L';
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+  function pct(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : (n*100).toFixed(1) + '%'; }
+
+  async function fetchUnit(u){
+    try{
+      var res = await fetch(u.path + '?_=' + Date.now(), { cache:'no-store' });
+      if (!res.ok) return { unit:u, data:null };
+      var html = await res.text();
+      var m = html.match(/var EMBEDDED_DATA = ([\s\S]*?);\n\s*var EMBEDDED_FILENAME/);
+      if (!m) return { unit:u, data:null };
+      var D = JSON.parse(m[1]);
+      return { unit:u, data:D };
+    }catch(err){
+      console.error('Could not load', u.key, err);
+      return { unit:u, data:null };
+    }
+  }
+
+  Promise.all(UNITS.map(fetchUnit)).then(function(results){
+    var body = document.getElementById('summaryBody');
+    body.innerHTML = '';
+    var revLabels = [], revValues = [], collValues = [];
+
+    results.forEach(function(r){
+      var D = r.data;
+      var tr = document.createElement('tr');
+      if (!D){
+        tr.innerHTML = '<td>' + r.unit.label + '</td><td class="nodata" colspan="5">No workbook uploaded yet — <a href="' + r.unit.path + '">open dashboard →</a></td>';
+        body.appendChild(tr);
+        return;
+      }
+      var collPct = D.deptTotalRevenue ? (D.deptTotalCollection / D.deptTotalRevenue) : null;
+      tr.innerHTML =
+        '<td>' + r.unit.label + '</td>' +
+        '<td class="num">' + inr(D.deptTotalRevenue) + '</td>' +
+        '<td class="num">' + pct(collPct) + '</td>' +
+        '<td class="num">' + (D.opMetrics ? D.opMetrics.alos.toFixed(2) : '—') + ' d</td>' +
+        '<td class="num">' + (D.opMetrics ? pct(D.opMetrics.occupancy) : '—') + '</td>' +
+        '<td class="num">' + (D.opMetrics ? inr(D.opMetrics.arpobDaily) : '—') + '</td>';
+      body.appendChild(tr);
+
+      revLabels.push(r.unit.label);
+      revValues.push(D.deptTotalRevenue || 0);
+      collValues.push(collPct ? +(collPct*100).toFixed(1) : 0);
+    });
+
+    document.getElementById('foot').textContent = 'Refreshed ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'}) + '. Units with no uploaded workbook are skipped in the charts below.';
+
+    if (window.Chart && revLabels.length){
+      new Chart(document.getElementById('revChart'), {
+        type: 'bar',
+        data: { labels: revLabels, datasets: [{ label: 'IP Revenue (₹)', data: revValues, backgroundColor: '#1c7293', borderRadius: 6 }] },
+        options: { plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:function(v){ return inr(v); } } } } }
+      });
+      new Chart(document.getElementById('collChart'), {
+        type: 'bar',
+        data: { labels: revLabels, datasets: [{ label: 'Collection %', data: collValues, backgroundColor: '#16a34a', borderRadius: 6 }] },
+        options: { plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ callback:function(v){ return v + '%'; } }, max:100 } } }
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>
