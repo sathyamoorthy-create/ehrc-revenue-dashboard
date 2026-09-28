@@ -2091,10 +2091,12 @@
       var buildId = new Date().toISOString();
       var cur = await ghRequest('index.html');
       var src = b64DecodeUnicode(cur.content);
-      src = src.replace(/var EMBEDDED_DATA = [\s\S]*?;\n\s*var EMBEDDED_FILENAME = .*?;\n\s*window\.BUILD_ID = .*?;\n/,
+      var newSrc = src.replace(/var EMBEDDED_DATA = [\s\S]*?;\n\s*var EMBEDDED_FILENAME = .*?;\n\s*window\.BUILD_ID = .*?;[^\n]*\n/,
         '  var EMBEDDED_DATA = ' + JSON.stringify(window.__lastD) + ';\n' +
         '  var EMBEDDED_FILENAME = ' + JSON.stringify(window.__lastFilename) + ';\n' +
-        '  window.BUILD_ID = ' + JSON.stringify(buildId) + ';\n');
+        '  window.BUILD_ID = ' + JSON.stringify(buildId) + '; // updated on every publish; used to detect a newer live version\n');
+      if (newSrc === src){ throw new Error('Could not locate the data block to update — nothing was changed.'); }
+      src = newSrc;
       await ghRequest('index.html', { method: 'PUT', body: JSON.stringify({ message: 'Update dashboard data — ' + window.__lastFilename, content: b64EncodeUnicode(src), sha: cur.sha, branch: 'main' }) });
 
       var curV = await ghRequest('version.json').catch(function(){ return null; });
