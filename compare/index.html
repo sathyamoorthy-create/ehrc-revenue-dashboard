@@ -80,16 +80,16 @@
   function pct(n){ return (n===null||n===undefined||isNaN(n)) ? '—' : (n*100).toFixed(1) + '%'; }
 
   async function fetchUnit(u){
+    // Each unit publishes its figures to its own data.json. Fetching that directly
+    // (with a cache-buster) means this page always shows what those dashboards show.
     try{
-      var res = await fetch(u.path + '?_=' + Date.now(), { cache:'no-store' });
+      var res = await fetch(u.path + "data.json?_=" + Date.now(), { cache:"no-store" });
       if (!res.ok) return { unit:u, data:null };
-      var html = await res.text();
-      var m = html.match(/var EMBEDDED_DATA = ([\s\S]*?);\n\s*var EMBEDDED_FILENAME/);
-      if (!m) return { unit:u, data:null };
-      var D = JSON.parse(m[1]);
-      return { unit:u, data:D };
+      var p = await res.json();
+      if (!p || !p.data) return { unit:u, data:null };
+      return { unit:u, data:p.data };
     }catch(err){
-      console.error('Could not load', u.key, err);
+      console.error("Could not load", u.key, err);
       return { unit:u, data:null };
     }
   }
