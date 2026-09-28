@@ -1,0 +1,2052 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenue Dashboard</title>
+</head>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  // Pre-loaded data so the dashboard opens already showing a complete month.
+  // Upload a new workbook any day to replace this with fresh figures.
+  var EMBEDDED_DATA = {"titlePeriod": "Revenue Analysis \u2014 Sep 2026", "payerDiscount": [{"type": "Insurance", "gross": 1677791.0, "discount": 99618.0, "net": 1578173.0}, {"type": "Cash", "gross": 3950109.0, "discount": 222160.0, "net": 3727949.0}, {"type": "PDC", "gross": 4060589.0, "discount": 0.0, "net": 4060589.0}, {"type": "TPA", "gross": 5944594.0, "discount": 1054953.0, "net": 4889642.0}, {"type": "Even", "gross": 35162.0, "discount": 15162.0, "net": 20000.0}], "payerOperating": [{"type": "Insurance", "count": 14.0, "alos": 2.7142857142857144, "arpob": 44152.39473684211}, {"type": "Cash", "count": 36.0, "alos": 2.611111111111111, "arpob": 42022.436170212764}, {"type": "PDC", "count": 24.0, "alos": 2.6666666666666665, "arpob": 63446.703125}], "opMetrics": {"alos": 2.7663551401869158, "avgBeds": 16.444444444444443, "occupancy": 0.274074074074074, "arpobDaily": 59988.92905405405}, "depts": [{"name": "Orthopedics", "discharges": 16.0, "alos": 3.875, "revenue": 3786518.0, "collection": 1352931.0, "pending": 2501586.0, "consumption": 1491684.0, "consumptionPct": 0.39394610034865807, "contribution": 2294834.0, "contributionPct": 0.6060538996513419}, {"name": "General Surgery", "discharges": 36.0, "alos": 2.638888888888889, "revenue": 4257625.0, "collection": 1153859.0, "pending": 3103766.0, "consumption": 446943.0, "consumptionPct": 0.10497472182261237, "contribution": 3810682.0, "contributionPct": 0.8950252781773876}, {"name": "Urology", "discharges": 14.0, "alos": 2.0714285714285716, "revenue": 1751988.0, "collection": 102541.0, "pending": 1659447.0, "consumption": 310360.0, "consumptionPct": 0.17714733205935201, "contribution": 1441628.0, "contributionPct": 0.822852667940648}, {"name": "Gynecologic Oncosurgery & Peritoneal Surface Oncology", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Internal Medicine", "discharges": 5.0, "alos": 3.6, "revenue": 344573.0, "collection": 153000.0, "pending": 191573.0, "consumption": 24307.0, "consumptionPct": 0.07054238144021731, "contribution": 320266.0, "contributionPct": 0.9294576185597827}, {"name": "Neurosurgery", "discharges": 3.0, "alos": 3.6666666666666665, "revenue": 586602.0, "collection": 185000.0, "pending": 401602.0, "consumption": 99803.0, "consumptionPct": 0.17013750379303172, "contribution": 486799.0, "contributionPct": 0.8298624962069683}, {"name": "ENT/ Otorhinolaryngologist", "discharges": 7.0, "alos": 2.0, "revenue": 1049937.0, "collection": 112361.0, "pending": 937576.0, "consumption": 35502.0, "consumptionPct": 0.0338134573788713, "contribution": 1014435.0, "contributionPct": 0.9661865426211287}, {"name": "General Surgery & Vascular Surgery", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Intervention Radiology", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Oral & maxillofacial Surgeon", "discharges": 3.0, "alos": 3.6666666666666665, "revenue": 394070.0, "collection": 11092.0, "pending": 382978.0, "consumption": 70025.0, "consumptionPct": 0.17769685588854772, "contribution": 324045.0, "contributionPct": 0.8223031441114523}, {"name": "Obstetrics and gynecology", "discharges": 5.0, "alos": 3.2, "revenue": 390142.0, "collection": 124809.0, "pending": 265333.0, "consumption": 37129.0, "consumptionPct": 0.09516791322133993, "contribution": 353013.0, "contributionPct": 0.9048320867786601}, {"name": "Vascular Surgery", "discharges": 1.0, "alos": 3.0, "revenue": 154618.0, "collection": 5000.0, "pending": 149618.0, "consumption": 11990.0, "consumptionPct": 0.07754595195902159, "contribution": 142628.0, "contributionPct": 0.9224540480409784}, {"name": "Plastic /reconstructive surgery", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Radiation Oncology", "discharges": 6.0, "alos": 1.0, "revenue": 158968.0, "collection": 101314.0, "pending": 57654.0, "consumption": 12311.0, "consumptionPct": 0.07744325902068341, "contribution": 146657.0, "contributionPct": 0.9225567409793166}, {"name": "Orthopedics & Spine Surgeon", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Pediatrics", "discharges": 1.0, "alos": 3.0, "revenue": 17447.0, "collection": 17447.0, "pending": 0.0, "consumption": 1458.0, "consumptionPct": 0.08356737548002521, "contribution": 15989.0, "contributionPct": 0.9164326245199748}, {"name": "Plastic Surgery", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Ear Nose and Throat", "discharges": 5.0, "alos": 3.4, "revenue": 898179.0, "collection": 788679.0, "pending": 109500.0, "consumption": 50126.0, "consumptionPct": 0.055808474702704024, "contribution": 848053.0, "contributionPct": 0.944191525297296}, {"name": "Podiatrist", "discharges": 1.0, "alos": 3.0, "revenue": 217182.0, "collection": 3.0, "pending": 217179.0, "consumption": 36621.0, "consumptionPct": 0.16861894632151836, "contribution": 180561.0, "contributionPct": 0.8313810536784817}, {"name": "Oncology", "discharges": 2.0, "alos": 1.0, "revenue": 60000.0, "collection": 60000.0, "pending": 0.0, "consumption": 23900.0, "consumptionPct": 0.3983333333333333, "contribution": 36100.0, "contributionPct": 0.6016666666666667}, {"name": "Anesthesia", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Medical Gastroenterology", "discharges": 1.0, "alos": 1.0, "revenue": 16500.0, "collection": 16500.0, "pending": 0.0, "consumption": 1748.0, "consumptionPct": 0.10593939393939394, "contribution": 14752.0, "contributionPct": 0.8940606060606061}, {"name": "Cardiology", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "General and Gastrointestinal Surgeon", "discharges": 1.0, "alos": 5.0, "revenue": 192004.0, "collection": 3.0, "pending": 192001.0, "consumption": 16263.0, "consumptionPct": 0.08470136038832524, "contribution": 175741.0, "contributionPct": 0.9152986396116748}, {"name": "Intensive Care", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 987.0, "consumptionPct": 0.0, "contribution": -987.0, "contributionPct": 0.0}, {"name": "Nephrology", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Neurology", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "General Medicine", "discharges": 0.0, "alos": 0.0, "revenue": 0.0, "collection": 0.0, "pending": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}], "deptTotalRevenue": 14276353.0, "deptTotalCollection": 4184539.0, "deptTotalPending": 10169813.0, "doctors": [{"name": "Dr Manoj Kumar S", "speciality": "Orthopedics", "association": "Part Time - Consultant", "discharges": 9.0, "patientDays": 39.0, "alos": 4.333333333333333, "revenue": 2255976.0, "pctRevenue": 0.15802187015129143, "collection": 548229.0, "pending": 1707747.0, "collectionPct": 0.24301189374355045, "consumption": 830241.0, "consumptionPct": 0.3680185427504548, "contribution": 1425735.0, "contributionPct": 0.6319814572495452}, {"name": "Dr Mithun N Oswal", "speciality": "Orthopedics", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 4.0, "alos": 4.0, "revenue": 252480.0, "pctRevenue": 0.01768518892745227, "collection": 0.0, "pending": 252480.0, "collectionPct": 0.0, "consumption": 115059.0, "consumptionPct": 0.4557153041825095, "contribution": 137421.0, "contributionPct": 0.5442846958174905}, {"name": "Dr Nayar Sajeet Gopinathan", "speciality": "General Surgery", "association": "Part Time - Consultant", "discharges": 11.0, "patientDays": 29.0, "alos": 2.6363636363636362, "revenue": 1137514.0, "pctRevenue": 0.07967819232264711, "collection": 113272.0, "pending": 1024242.0, "collectionPct": 0.0995785546375693, "consumption": 139507.0, "consumptionPct": 0.1226420070434298, "contribution": 998007.0, "contributionPct": 0.8773579929565702}, {"name": "Dr Shankar R Kurpad", "speciality": "Orthopedics", "association": "Visiting Consultant", "discharges": 2.0, "patientDays": 6.0, "alos": 3.0, "revenue": 331973.0, "pctRevenue": 0.023253347686205295, "collection": 149972.0, "pending": 250000.0, "collectionPct": 0.45175963105433276, "consumption": 64941.0, "consumptionPct": 0.19562133065038423, "contribution": 267032.0, "contributionPct": 0.8043786693496158}, {"name": "Dr Roopesh Narayanachary", "speciality": "Gynecologic Oncosurgery & Peritoneal Surface Oncology", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Poornima Parasuraman", "speciality": "General Surgery", "association": "Full Time - Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 67429.0, "pctRevenue": 0.0047231250165921225, "collection": 67429.0, "pending": 0.0, "collectionPct": 1.0, "consumption": 1339.0, "consumptionPct": 0.01985792463183497, "contribution": 66090.0, "contributionPct": 0.980142075368165}, {"name": "Dr Amresh S Bhaganagare", "speciality": "Neurosurgery", "association": "Visiting Consultant", "discharges": 3.0, "patientDays": 11.0, "alos": 3.6666666666666665, "revenue": 586602.0, "pctRevenue": 0.04108906525357001, "collection": 185000.0, "pending": 401602.0, "collectionPct": 0.3153756720911282, "consumption": 99803.0, "consumptionPct": 0.17013750379303172, "contribution": 486799.0, "contributionPct": 0.8298624962069683}, {"name": "Dr Ankit P Bhojani", "speciality": "Internal Medicine", "association": "Part Time - Consultant", "discharges": 5.0, "patientDays": 18.0, "alos": 3.6, "revenue": 344573.0, "pctRevenue": 0.024135926030968834, "collection": 153000.0, "pending": 191573.0, "collectionPct": 0.4440278257437466, "consumption": 24307.0, "consumptionPct": 0.07054238144021731, "contribution": 320266.0, "contributionPct": 0.9294576185597827}, {"name": "Dr Prathik R", "speciality": "Urology", "association": "Part Time - Consultant", "discharges": 6.0, "patientDays": 12.0, "alos": 2.0, "revenue": 528838.0, "pctRevenue": 0.03704293386413183, "collection": 60002.0, "pending": 468836.0, "collectionPct": 0.11346007662081772, "consumption": 214407.0, "consumptionPct": 0.4054303964541126, "contribution": 314431.0, "contributionPct": 0.5945696035458874}, {"name": "Dr Prashanth Nagaraj", "speciality": "Orthopedics", "association": "Full Time - Consultant", "discharges": 2.0, "patientDays": 7.0, "alos": 3.5, "revenue": 350000.0, "pctRevenue": 0.024516065132320557, "collection": 350000.0, "pending": 0.0, "collectionPct": 1.0, "consumption": 231806.0, "consumptionPct": 0.6623028571428572, "contribution": 118194.0, "contributionPct": 0.33769714285714286}, {"name": "Dr Neehal V Abbigeri", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Naveen Kumar A G", "speciality": "ENT/ Otorhinolaryngologist", "association": "Visiting Consultant", "discharges": 7.0, "patientDays": 14.0, "alos": 2.0, "revenue": 1049937.0, "pctRevenue": 0.07354378250523785, "collection": 112361.0, "pending": 937576.0, "collectionPct": 0.10701689720430844, "consumption": 35502.0, "consumptionPct": 0.0338134573788713, "contribution": 1014435.0, "contributionPct": 0.9661865426211287}, {"name": "Dr Chandrashekara Reddy S A", "speciality": "General Surgery & Vascular Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr. Rahul Deep G", "speciality": "Intervention Radiology", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Udayaravi M P", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 9.0, "patientDays": 26.0, "alos": 2.888888888888889, "revenue": 1240038.0, "pctRevenue": 0.0868595782130072, "collection": 598783.0, "pending": 641255.0, "collectionPct": 0.48287471835540524, "consumption": 91787.0, "consumptionPct": 0.07401950585385286, "contribution": 1148251.0, "contributionPct": 0.9259804941461471}, {"name": "Dr Navaneeth Srinidhi R", "speciality": "Urology", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Anil S Mehta", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 8.0, "patientDays": 25.0, "alos": 3.125, "revenue": 1296674.0, "pctRevenue": 0.09082669782681893, "collection": 151005.0, "pending": 1145669.0, "collectionPct": 0.11645563958250107, "consumption": 189286.0, "consumptionPct": 0.14597809472542828, "contribution": 1107388.0, "contributionPct": 0.8540219052745717}, {"name": "Dr Pramukh Natesh", "speciality": "Oral & maxillofacial Surgeon", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Nivedita Jha", "speciality": "Obstetrics and gynecology", "association": "Part Time - Consultant", "discharges": 4.0, "patientDays": 14.0, "alos": 3.5, "revenue": 345142.0, "pctRevenue": 0.024175782148283947, "collection": 124809.0, "pending": 220333.0, "collectionPct": 0.36161637818636966, "consumption": 25370.0, "consumptionPct": 0.0735059772499435, "contribution": 319772.0, "contributionPct": 0.9264940227500565}, {"name": "Dr Jayashankar B", "speciality": "Orthopedics", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Prabhudev Salanki", "speciality": "Urology", "association": "Part Time - Consultant", "discharges": 5.0, "patientDays": 11.0, "alos": 2.2, "revenue": 742081.0, "pctRevenue": 0.0519797317984502, "collection": 39937.0, "pending": 712144.0, "collectionPct": 0.0538175751703655, "consumption": 80949.0, "consumptionPct": 0.1090837792639887, "contribution": 661132.0, "contributionPct": 0.8909162207360113}, {"name": "Dr Monish V", "speciality": "Vascular Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Dhanshekar N", "speciality": "Urology", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Anitha M", "speciality": "Plastic /reconstructive surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Ajay P", "speciality": "Radiation Oncology", "association": "Visiting Consultant", "discharges": 6.0, "patientDays": 6.0, "alos": 1.0, "revenue": 158968.0, "pctRevenue": 0.011135056691299241, "collection": 101314.0, "pending": 57654.0, "collectionPct": 0.6373232348648785, "consumption": 12311.0, "consumptionPct": 0.07744325902068341, "contribution": 146657.0, "contributionPct": 0.9225567409793166}, {"name": "Dr Vivekanand N Bhat", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 4.0, "patientDays": 5.0, "alos": 1.25, "revenue": 209999.0, "pctRevenue": 0.014709569033491956, "collection": 210000.0, "pending": -1.0, "collectionPct": 1.0000047619274377, "consumption": 6866.0, "consumptionPct": 0.03269539378758946, "contribution": 203133.0, "contributionPct": 0.9673046062124105}, {"name": "Dr Manjunath Giriyappa", "speciality": "Orthopedics", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Vishal Naik", "speciality": "Urology", "association": "Part Time - Consultant", "discharges": 1.0, "patientDays": 2.0, "alos": 2.0, "revenue": 102400.0, "pctRevenue": 0.007172700198713215, "collection": 2600.0, "pending": 99800.0, "collectionPct": 0.025390625, "consumption": 7436.0, "consumptionPct": 0.0726171875, "contribution": 94964.0, "contributionPct": 0.9273828125}, {"name": "Dr Vinay Kumar. M. S", "speciality": "Orthopedics & Spine Surgeon", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Sharil Hegde P", "speciality": "Pediatrics", "association": "Part Time - Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 17447.0, "pctRevenue": 0.0012220908238959908, "collection": 17447.0, "pending": 0.0, "collectionPct": 1.0, "consumption": 1458.0, "consumptionPct": 0.08356737548002521, "contribution": 15989.0, "contributionPct": 0.9164326245199748}, {"name": "Dr Anusham Ananthasayanan Anantharam", "speciality": "Plastic Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Animesh Banerjee", "speciality": "Ear Nose and Throat", "association": "Full Time - Consultant", "discharges": 4.0, "patientDays": 14.0, "alos": 3.5, "revenue": 788679.0, "pctRevenue": 0.055243730664266986, "collection": 788679.0, "pending": 0.0, "collectionPct": 1.0, "consumption": 45125.0, "consumptionPct": 0.05721592688533611, "contribution": 743554.0, "contributionPct": 0.9427840731146638}, {"name": "Dr Sanjay Sharma", "speciality": "Podiatrist", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 217182.0, "pctRevenue": 0.015212708735907552, "collection": 3.0, "pending": 217179.0, "collectionPct": 1.3813299444705363e-05, "consumption": 36621.0, "consumptionPct": 0.16861894632151836, "contribution": 180561.0, "contributionPct": 0.8313810536784817}, {"name": "Dr Naveen Kumar K", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Avinash Parthasarathy", "speciality": "Orthopedics", "association": "Part Time - Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 296089.0, "pctRevenue": 0.020739820597039035, "collection": 4730.0, "pending": 291359.0, "collectionPct": 0.015974926457923123, "consumption": 115560.0, "consumptionPct": 0.3902880552806757, "contribution": 180529.0, "contributionPct": 0.6097119447193242}, {"name": "Dr Manoj C", "speciality": "Internal Medicine", "association": "Part Time - Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Mohammed Hafeez", "speciality": "Oncology", "association": "Visiting Consultant", "discharges": 2.0, "patientDays": 2.0, "alos": 1.0, "revenue": 60000.0, "pctRevenue": 0.004202754022683525, "collection": 60000.0, "pending": 0.0, "collectionPct": 1.0, "consumption": 23900.0, "consumptionPct": 0.3983333333333333, "contribution": 36100.0, "contributionPct": 0.6016666666666667}, {"name": "Dr Shree Harsha M", "speciality": "Anesthesia", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Niyaz Ahmed", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Puneeth B S", "speciality": "Medical Gastroenterology", "association": "Part Time - Consultant", "discharges": 1.0, "patientDays": 1.0, "alos": 1.0, "revenue": 16500.0, "pctRevenue": 0.0011557573562379691, "collection": 16500.0, "pending": 0.0, "collectionPct": 1.0, "consumption": 1748.0, "consumptionPct": 0.10593939393939394, "contribution": 14752.0, "contributionPct": 0.8940606060606061}, {"name": "Dr Roshan Kumar Bhandari", "speciality": "Orthopedics", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Abrar Mohammed", "speciality": "Orthopedics", "association": "Part Time - Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Shreyas.C", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Mahendra Jain", "speciality": "Urology", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Tarun Desai", "speciality": "Orthopedics", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Basharat Nadeem", "speciality": "ENT/ Otorhinolaryngologist", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Gladson Guddappa Uchil", "speciality": "ENT/ Otorhinolaryngologist", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr Anthony Vijay Pais", "speciality": "Oncology", "association": "Visiting Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 0.0, "consumptionPct": 0.0, "contribution": 0.0, "contributionPct": 0.0}, {"name": "Dr G R Manjunath", "speciality": "Urology", "association": "Visiting Consultant", "discharges": 2.0, "patientDays": 4.0, "alos": 2.0, "revenue": 378669.0, "pctRevenue": 0.026524211050259126, "collection": 2.0, "pending": 378667.0, "collectionPct": 5.2816575954197465e-06, "consumption": 7569.0, "consumptionPct": 0.01998843316986603, "contribution": 371100.0, "contributionPct": 0.980011566830134}, {"name": "Dr Raghunandan K S", "speciality": "General and Gastrointestinal Surgeon", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 5.0, "alos": 5.0, "revenue": 192004.0, "pctRevenue": 0.01344909305618879, "collection": 3.0, "pending": 192001.0, "collectionPct": 1.5624674485948208e-05, "consumption": 16263.0, "consumptionPct": 0.08470136038832524, "contribution": 175741.0, "contributionPct": 0.9152986396116748}, {"name": "Dr Desna Vinay Shroff", "speciality": "Oral & maxillofacial Surgeon", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 108140.0, "pctRevenue": 0.007574763666883272, "collection": 1515.0, "pending": 106625.0, "collectionPct": 0.014009617162936933, "consumption": 28463.0, "consumptionPct": 0.2632051044941742, "contribution": 79677.0, "contributionPct": 0.7367948955058258}, {"name": "Dr Navaneeth Yerragudi", "speciality": "Oral & maxillofacial Surgeon", "association": "Visiting Consultant", "discharges": 2.0, "patientDays": 8.0, "alos": 4.0, "revenue": 285931.0, "pctRevenue": 0.020028294340998714, "collection": 9577.0, "pending": 276354.0, "collectionPct": 0.03349409472914794, "consumption": 41563.0, "consumptionPct": 0.1453602442547328, "contribution": 244368.0, "contributionPct": 0.8546397557452672}, {"name": "Dr Rajendra Prasad", "speciality": "Ear Nose and Throat", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 109500.0, "pctRevenue": 0.007670026091397432, "collection": 0.0, "pending": 109500.0, "collectionPct": 0.0, "consumption": 5001.0, "consumptionPct": 0.04567123287671233, "contribution": 104499.0, "contributionPct": 0.9543287671232876}, {"name": "Dr Prerana Nagabhushana", "speciality": "Obstetrics and gynecology", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 2.0, "alos": 2.0, "revenue": 45000.0, "pctRevenue": 0.003152065517012643, "collection": 0.0, "pending": 45000.0, "collectionPct": 0.0, "consumption": 11760.0, "consumptionPct": 0.2613333333333333, "contribution": 33240.0, "contributionPct": 0.7386666666666667}, {"name": "Dr Darshan Gowda", "speciality": "Intensive care", "association": "Full Time - Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 186.0, "consumptionPct": 0.0, "contribution": -186.0, "contributionPct": 0.0}, {"name": "Dr Shashidhara Naik C", "speciality": "General Surgery", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 2.0, "alos": 2.0, "revenue": 127182.0, "pctRevenue": 0.008908577701882267, "collection": 2.0, "pending": 127180.0, "collectionPct": 1.57254957462534e-05, "consumption": 8619.0, "consumptionPct": 0.06776902391847903, "contribution": 118563.0, "contributionPct": 0.932230976081521}, {"name": "Dr Prajeth S S", "speciality": "Intensive care", "association": "Full Time - Consultant", "discharges": 0.0, "patientDays": 0.0, "alos": 0.0, "revenue": 0.0, "pctRevenue": 0.0, "collection": 0.0, "pending": 0.0, "collectionPct": 0.0, "consumption": 801.0, "consumptionPct": 0.0, "contribution": -801.0, "contributionPct": 0.0}, {"name": "Dr Siddharth M", "speciality": "Vascular Surgery", "association": "Visiting Consultant", "discharges": 1.0, "patientDays": 3.0, "alos": 3.0, "revenue": 154618.0, "pctRevenue": 0.010830357024654687, "collection": 5000.0, "pending": 149618.0, "collectionPct": 0.032337761450801326, "consumption": 11990.0, "consumptionPct": 0.07754595195902159, "contribution": 142628.0, "contributionPct": 0.9224540480409784}], "assocMix": {"Part Time - Consultant": 5786560.0, "Visiting Consultant": 6804897.0, "Full Time - Consultant": 1206108.0}, "opDepts": [{"name": "Pharmacy", "revenue": 433095.0}, {"name": "Anesthesia", "revenue": 2550.0}, {"name": "Others", "revenue": 60320.0}, {"name": "Dietetics", "revenue": 50150.0}, {"name": "OP Package", "revenue": 453605.0}, {"name": "Neurosurgery", "revenue": 8500.0}, {"name": "Medical Gastroenterology", "revenue": 39150.0}, {"name": "Administration", "revenue": 0.0}, {"name": "Neurology", "revenue": 1700.0}, {"name": "Internal Medicine", "revenue": 208700.0}, {"name": "Urology", "revenue": 79314.0}, {"name": "General Surgery", "revenue": 82375.0}, {"name": "Medical Oncology", "revenue": 2700.0}, {"name": "Obstetrics and Gynecology", "revenue": 130050.0}, {"name": "Ear Nose and Throat", "revenue": 114675.0}, {"name": "Orthopedics", "revenue": 225444.0}, {"name": "Psychiatry", "revenue": 16150.0}, {"name": "Pediatrics", "revenue": 142800.0}, {"name": "Non Invasive Cardiology", "revenue": 22950.0}, {"name": "Nephrology", "revenue": 850.0}, {"name": "Surgical Oncology", "revenue": 0.0}, {"name": "Emergency Medicene", "revenue": 12200.0}, {"name": "Plastic Surgery", "revenue": 4700.0}, {"name": "Endocrinology", "revenue": 0.0}, {"name": "Dermatology", "revenue": 39950.0}, {"name": "Non Interventional Cardiology", "revenue": 32300.0}, {"name": "Radiology", "revenue": 504159.0}, {"name": "Cardiology", "revenue": 121370.0}, {"name": "Pathology", "revenue": 412917.0}, {"name": "Emergency Medicine", "revenue": 0.0}, {"name": "Oral & Maxillofacial Surgery", "revenue": 0.0}, {"name": "ENT/ Otorhinolaryngologist", "revenue": 0.0}, {"name": "Gynecologic Oncosurgery & Peritoneal Surface Oncology", "revenue": 0.0}, {"name": "Oncology", "revenue": 0.0}, {"name": "Radiation Oncology", "revenue": 0.0}, {"name": "Oral and Maxillofacial", "revenue": 0.0}, {"name": "Physio", "revenue": 255000.0}, {"name": "General Physican", "revenue": 850.0}], "payers": [{"name": "Medi Assist", "type": "TPA", "revenue": 3804708.0, "count": 22.0}, {"name": "Star Health", "type": "Insurance", "revenue": 637478.0, "count": 6.0}, {"name": "ICICI Lombard", "type": "Insurance", "revenue": 0.0, "count": 0.0}, {"name": "Cash", "type": "Cash", "revenue": 3314714.0, "count": 34.0}, {"name": "FHPL", "type": "TPA", "revenue": 659078.0, "count": 8.0}, {"name": "Reliance General", "type": "Insurance", "revenue": 0.0, "count": 0.0}, {"name": "Vidal TPA", "type": "TPA", "revenue": 99228.0, "count": 1.0}, {"name": "Bajaj Allianz", "type": "Insurance", "revenue": 0.0, "count": 0.0}, {"name": "GO Digit", "type": "TPA", "revenue": 0.0, "count": 0.0}, {"name": "Aditya Birala", "type": "Insurance", "revenue": 252255.0, "count": 2.0}, {"name": "International Cash", "type": "Cash", "revenue": 593679.0, "count": 2.0}, {"name": "Cash", "type": "PDC", "revenue": 3973846.0, "count": 23.0}, {"name": "Even", "type": "PDC", "revenue": 86743.0, "count": 1.0}, {"name": "Niva Bupa", "type": "Insurance", "revenue": 491438.0, "count": 4.0}, {"name": "Volo Health Insurance", "type": "TPA", "revenue": 326627.0, "count": 1.0}, {"name": "Manipal Cigna", "type": "Insurance", "revenue": 96000.0, "count": 1.0}, {"name": "IndusInd General Insurance", "type": "Insurance", "revenue": 101002.0, "count": 1.0}, {"name": "Even", "type": "Even", "revenue": 26914.0, "count": 1.0}], "dates": ["2026-09-01T00:00:00.000Z", "2026-09-02T00:00:00.000Z", "2026-09-03T00:00:00.000Z", "2026-09-04T00:00:00.000Z", "2026-09-05T00:00:00.000Z", "2026-09-06T00:00:00.000Z", "2026-09-07T00:00:00.000Z", "2026-09-08T00:00:00.000Z", "2026-09-09T00:00:00.000Z", "2026-09-10T00:00:00.000Z", "2026-09-11T00:00:00.000Z", "2026-09-12T00:00:00.000Z", "2026-09-13T00:00:00.000Z", "2026-09-14T00:00:00.000Z", "2026-09-15T00:00:00.000Z", "2026-09-16T00:00:00.000Z", "2026-09-17T00:00:00.000Z", "2026-09-18T00:00:00.000Z", "2026-09-19T00:00:00.000Z", "2026-09-20T00:00:00.000Z", "2026-09-21T00:00:00.000Z", "2026-09-22T00:00:00.000Z", "2026-09-23T00:00:00.000Z", "2026-09-24T00:00:00.000Z", "2026-09-25T00:00:00.000Z", "2026-09-26T00:00:00.000Z", "2026-09-27T00:00:00.000Z", "2026-09-28T00:00:00.000Z", "2026-09-29T00:00:00.000Z", "2026-09-30T00:00:00.000Z"], "dailyRows": [{"label": "ER", "group": "Kare Xpert", "values": [109312.0, 0.0, 6221.0, 0.0, 0.0, 2044.0, 6274.0, 13317.0, 15221.0, 0.0, 6617.0, 4220.0, 6672.0, 3994.0, 0.0, 10993.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 184885.0}, {"label": "IPD", "group": "Kare Xpert", "values": [1488154.0, 427004.0, 802108.0, 1122174.0, 452106.0, 568482.0, 326060.0, 1436713.0, 1063791.0, 1407322.0, 876361.0, 558587.0, 938338.0, 30810.0, 384620.0, 574634.0, 600456.0, 1055596.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 14113316.0}, {"label": "OP Pharmacy", "group": "Kare Xpert", "values": [12379.0, 24408.0, 26915.0, 25087.0, 24200.0, 20177.0, 23411.0, 22866.0, 52467.0, 33216.0, 22537.0, 41756.0, 12077.0, 4438.0, 24825.0, 16670.0, 14821.0, 30843.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 433093.0}, {"label": "OPD-Even", "group": "Kare Xpert", "values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 0.0}, {"label": "OPD-Non Even", "group": "Kare Xpert", "values": [0.0, 0.0, 0.0, 5000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 6700.0}, {"label": "Even Member", "group": "Pulse", "values": [154311.0, 195461.0, 128229.0, 117730.0, 218188.0, 31384.0, 181892.0, 172303.0, 147462.0, 153555.0, 170339.0, 319262.0, 71808.0, 5900.0, 183166.0, 223546.0, 184090.0, 147092.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 2805718.0}, {"label": "Non Even Member", "group": "Pulse", "values": [6667.0, 8780.0, 16614.0, 16655.0, 19896.0, 5406.0, 9550.0, 4398.0, 14242.0, 7624.0, 8524.0, 19186.0, 4222.0, 1149.0, 15607.0, 10025.0, 21693.0, 22773.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 213011.0}, {"label": "Grand Total", "group": null, "values": [1770823.0, 655653.0, 980087.0, 1286646.0, 714390.0, 627493.0, 547187.0, 1649597.0, 1293183.0, 1601717.0, 1085228.0, 943011.0, 1033117.0, 46291.0, 608218.0, 835868.0, 821060.0, 1257154.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 17756723.0}], "dailyByKey": {"er": {"label": "ER", "group": "Kare Xpert", "values": [109312.0, 0.0, 6221.0, 0.0, 0.0, 2044.0, 6274.0, 13317.0, 15221.0, 0.0, 6617.0, 4220.0, 6672.0, 3994.0, 0.0, 10993.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 184885.0}, "ipd": {"label": "IPD", "group": "Kare Xpert", "values": [1488154.0, 427004.0, 802108.0, 1122174.0, 452106.0, 568482.0, 326060.0, 1436713.0, 1063791.0, 1407322.0, 876361.0, 558587.0, 938338.0, 30810.0, 384620.0, 574634.0, 600456.0, 1055596.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 14113316.0}, "opPharmacy": {"label": "OP Pharmacy", "group": "Kare Xpert", "values": [12379.0, 24408.0, 26915.0, 25087.0, 24200.0, 20177.0, 23411.0, 22866.0, 52467.0, 33216.0, 22537.0, 41756.0, 12077.0, 4438.0, 24825.0, 16670.0, 14821.0, 30843.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 433093.0}, "opdEven": {"label": "OPD-Even", "group": "Kare Xpert", "values": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 0.0}, "opdNonEven": {"label": "OPD-Non Even", "group": "Kare Xpert", "values": [0.0, 0.0, 0.0, 5000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 6700.0}, "evenMember": {"label": "Even Member", "group": "Pulse", "values": [154311.0, 195461.0, 128229.0, 117730.0, 218188.0, 31384.0, 181892.0, 172303.0, 147462.0, 153555.0, 170339.0, 319262.0, 71808.0, 5900.0, 183166.0, 223546.0, 184090.0, 147092.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 2805718.0}, "nonEvenMember": {"label": "Non Even Member", "group": "Pulse", "values": [6667.0, 8780.0, 16614.0, 16655.0, 19896.0, 5406.0, 9550.0, 4398.0, 14242.0, 7624.0, 8524.0, 19186.0, 4222.0, 1149.0, 15607.0, 10025.0, 21693.0, 22773.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 213011.0}, "grandTotal": {"label": "Grand Total", "group": null, "values": [1770823.0, 655653.0, 980087.0, 1286646.0, 714390.0, 627493.0, 547187.0, 1649597.0, 1293183.0, 1601717.0, 1085228.0, 943011.0, 1033117.0, 46291.0, 608218.0, 835868.0, 821060.0, 1257154.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total": 17756723.0}}, "target": 39000000.0, "targetPct": 0.4553005897435897, "opdRevenueSeries": [173357.0, 228649.0, 171758.0, 164472.0, 262284.0, 56967.0, 214853.0, 199567.0, 214171.0, 194395.0, 202250.0, 380204.0, 88107.0, 11487.0, 223598.0, 250241.0, 220604.0, 201558.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]};
+  var EMBEDDED_FILENAME = "Revenue_Analysis-EHRC-Sep-2026.xlsx";
+</script>
+<style>
+  .viz-root{
+    color-scheme: light;
+    --surface-1:#fcfcfb; --surface-2:#ffffff; --page:#f4f6fb;
+    --text-1:#1a2130; --text-2:#52514e; --text-muted:#64748b;
+    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(15,23,42,0.08);
+    --s1:#1c7293; --s2:#16a34a; --s3:#f4a300; --s4:#7c4fe0;
+    --s5:#db2777; --s6:#ea7317; --s7:#0891b2; --s8:#dc2626;
+    --accent2:#0b3d59;
+    --good:#16a34a; --warn:#f4a300; --crit:#dc2626;
+    --shadow: 0 1px 2px rgba(11,11,11,.04), 0 6px 20px rgba(11,11,11,.06);
+    --shadow-lg: 0 4px 10px rgba(11,11,11,.06), 0 16px 40px rgba(11,11,11,.10);
+    --hero-a: rgba(28,114,147,.10); --hero-b: rgba(124,79,224,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .viz-root{
+      color-scheme: dark;
+      --surface-1:#1a1a19; --surface-2:#201f1e; --page:#0d0d0d;
+      --text-1:#ffffff; --text-2:#c3c2b7; --text-muted:#9aa5b1;
+      --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+      --s1:#3aa0c6; --s2:#34d399; --s3:#facc15; --s4:#a78bfa;
+      --s5:#f472b6; --s6:#fb923c; --s7:#22d3ee; --s8:#f87171;
+      --accent2:#0b3d59;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px rgba(0,0,0,.4);
+      --shadow-lg: 0 6px 16px rgba(0,0,0,.35), 0 20px 48px rgba(0,0,0,.5);
+      --hero-a: rgba(58,160,198,.16); --hero-b: rgba(167,139,250,.12);
+    }
+  }
+  :root[data-theme="dark"] .viz-root{
+    color-scheme: dark;
+    --surface-1:#1a1a19; --surface-2:#201f1e; --page:#0d0d0d;
+    --text-1:#ffffff; --text-2:#c3c2b7; --text-muted:#9aa5b1;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+    --s1:#3aa0c6; --s2:#34d399; --s3:#facc15; --s4:#a78bfa;
+    --s5:#f472b6; --s6:#fb923c; --s7:#22d3ee; --s8:#f87171;
+    --accent2:#0b3d59;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px rgba(0,0,0,.4);
+    --shadow-lg: 0 6px 16px rgba(0,0,0,.35), 0 20px 48px rgba(0,0,0,.5);
+    --hero-a: rgba(58,160,198,.16); --hero-b: rgba(167,139,250,.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);}
+  .viz-root{
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    color:var(--text-1);
+    background:
+      radial-gradient(circle at 15% 0%, var(--hero-a), transparent 45%),
+      radial-gradient(circle at 85% 15%, var(--hero-b), transparent 40%),
+      var(--page);
+    min-height:100vh;
+    padding-bottom: 48px;
+  }
+  a{color:var(--s1);}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 22px;}
+  .topband{ height:4px; background:linear-gradient(90deg,var(--s1),var(--s4),var(--s5)); }
+
+  header.topbar{
+    position:sticky; top:0; z-index:50;
+    background:var(--surface-1); border-bottom:1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+  .topbar-inner{
+    max-width:1360px;margin:0 auto;padding:13px 22px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .upload-slot{ order:1; flex-shrink:0; }
+  .brand{ order:2; display:flex;align-items:center;gap:12px; margin-right:auto; }
+  .topbar-actions{ order:3; display:flex; align-items:center; gap:10px; flex-shrink:0; }
+
+  .brand .mark{
+    width:38px;height:38px;border-radius:10px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--s1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:17px;
+    box-shadow: 0 4px 18px rgba(28,114,147,0.35);
+  }
+  .brand h1{font-size:16.5px;margin:0;font-weight:800;letter-spacing:-.01em;background:linear-gradient(120deg,var(--text-1) 55%,var(--s1));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .brand .meta{font-size:11.5px;color:var(--text-muted);margin-top:1px;}
+
+  .sync-status{ display:inline-flex; align-items:center; gap:7px; background:rgba(22,163,74,0.10); border:1px solid rgba(22,163,74,0.3); color:var(--good); font-size:11.5px; font-weight:600; padding:6px 12px; border-radius:999px; white-space:nowrap; }
+  .sync-status .dot{ width:7px;height:7px;border-radius:50%; background:currentColor; animation: pulse 2s infinite; }
+  @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(22,163,74,.55);} 70%{ box-shadow:0 0 0 8px rgba(22,163,74,0);} 100%{ box-shadow:0 0 0 0 rgba(22,163,74,0);} }
+
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;
+    padding:9px 16px;border-radius:999px;cursor:pointer;border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-1); transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{ filter:brightness(0.97); transform:translateY(-1px); }
+  .btn.primary{ background:linear-gradient(135deg,var(--s1),var(--accent2)); color:#fff; border:none; box-shadow: 0 4px 14px rgba(28,114,147,0.3); }
+  .btn.primary:hover{ filter:brightness(1.08); }
+  .btn svg{ width:14px;height:14px; flex-shrink:0; }
+  input[type=file]{display:none;}
+
+  /* ---- Tab bar (pill/segmented, matching the EHBR style) ---- */
+  .tabbar{
+    max-width:1360px;margin:12px auto 0; padding:0 22px 16px;
+    display:flex; align-items:center; gap:4px;
+  }
+  .tabbar-inner{
+    display:flex; flex-wrap:wrap; gap:6px; background:rgba(15,23,42,0.05); border-radius:12px; padding:5px;
+  }
+  :root[data-theme="dark"] .tabbar-inner{ background:rgba(255,255,255,0.06); }
+  @media (prefers-color-scheme: dark){ :root:where(:not([data-theme="light"])) .tabbar-inner{ background:rgba(255,255,255,0.06); } }
+  .tab-btn{
+    appearance:none; border:none; background:transparent; cursor:pointer;
+    font-size:12.5px; font-weight:700; color:var(--text-muted);
+    padding:9px 18px; border-radius:9px; white-space:nowrap;
+    transition: all .15s ease;
+  }
+  .tab-btn:hover{ color:var(--text-1); }
+  .tab-btn.active{ background:var(--surface-2); color:var(--s1); box-shadow:0 2px 8px rgba(15,23,42,0.1); }
+
+  /* ---- Empty state ---- */
+  #emptyState{
+    max-width:640px;margin:11vh auto 0; padding:0 22px; text-align:center;
+    animation: fadeUp .5s ease both;
+  }
+  #emptyState .arrow{ font-size:30px; color:var(--s1); margin-bottom:6px; }
+  #emptyState h2{ font-size:24px; margin:0 0 10px; letter-spacing:-.02em; }
+  #emptyState p{ color:var(--text-2); font-size:14px; margin:0 0 6px; line-height:1.65;}
+  #emptyState .trust{margin-top:18px;font-size:11.5px;color:var(--text-muted);}
+  #uploadError{
+    margin:18px auto 0; max-width:560px; padding:12px 16px;border-radius:10px;background:rgba(211,59,59,.08);
+    border:1px solid rgba(211,59,59,.25); color:var(--crit); font-size:13px; text-align:left; display:none;
+  }
+  .dragging #emptyState{ outline:2px dashed var(--s1); outline-offset:12px; border-radius:16px; }
+
+  /* ---- Dashboard body ---- */
+  .tab-panel{ animation: fadeUp .35s ease both; }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+  .hero-band{
+    border-radius:20px; padding:22px 22px 18px; margin:26px 0 0;
+    background: radial-gradient(circle at 15% 0%, var(--hero-a), transparent 55%),
+                radial-gradient(circle at 90% 20%, var(--hero-b), transparent 50%);
+    border:1px solid var(--border);
+  }
+  .hero-pulse{ margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+  .hero-pulse-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
+  .hero-pulse-label{ font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+  .hero-pulse-figure{ font-size:12px; font-weight:700; color:var(--s1); }
+  .watchlist{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .watch-row{ display:flex; align-items:center; gap:10px; font-size:12.5px; padding:9px 12px; border-radius:10px; background:rgba(244,163,0,.08); border:1px solid rgba(244,163,0,.22); }
+  .watch-row.crit{ background:rgba(220,38,38,.07); border-color:rgba(220,38,38,.2); }
+  .watch-row .wtag{ flex-shrink:0; font-size:10px; font-weight:800; letter-spacing:.04em; padding:2px 8px; border-radius:999px; background:var(--warn); color:#1a2130; }
+  .watch-row.crit .wtag{ background:var(--crit); color:#fff; }
+  .section{margin-top:28px;}
+  .section:first-child{margin-top:0;}
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    margin:0 0 14px;
+  }
+  .section-head h2{ font-size:16px; margin:0; letter-spacing:-.01em; }
+  .section-head .part-tag{
+    font-size:10.5px; font-weight:800; letter-spacing:.06em; color:var(--s1);
+    background:rgba(42,120,214,.10); padding:3px 9px; border-radius:999px;
+  }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .mini-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+  .mini-stat{ background:var(--surface-1); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow); }
+  .mini-stat .mini-label{ font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .mini-stat .mini-value{ font-size:20px; font-weight:800; margin-top:5px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .mini-stat .mini-sub{ font-size:11px; color:var(--text-2); margin-top:3px; }
+  .select-input{
+    width:100%; max-width:420px; font-size:13px; font-weight:600; color:var(--text-1);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+    padding:9px 12px; cursor:pointer; appearance:auto;
+  }
+  .brief-head{ display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:14px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+  .brief-title{ font-size:21px; font-weight:800; letter-spacing:-.01em; }
+  .brief-sub{ font-size:12px; color:var(--text-muted); margin-top:3px; }
+  .brief-cols{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:22px; }
+  .brief-col-title{ font-size:12.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
+  @media (max-width:980px){ .brief-cols{ grid-template-columns:1fr; } }
+  .kpi-card{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:16px;
+    padding:16px 18px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+    transition: transform .18s ease, box-shadow .18s ease;
+    animation: fadeUp .4s ease both;
+  }
+  .kpi-card::before{ content:''; position:absolute; inset:0; opacity:.55; pointer-events:none; background:radial-gradient(120px 60px at 90% -10%, var(--glow, rgba(28,114,147,0.25)), transparent 70%); }
+  .kpi-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+  .kpi-top{ display:flex; align-items:center; justify-content:space-between; position:relative; }
+  .kpi-icon{ font-size:15px; opacity:.85; }
+  .kpi-card .label{ font-size:10.5px; font-weight:700; letter-spacing:.05em; color:var(--text-muted); text-transform:uppercase; }
+  .kpi-card .value{ font-size:24px; font-weight:800; margin-top:6px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; position:relative; }
+  .kpi-card .sub{ font-size:11.5px; color:var(--text-2); margin-top:4px; position:relative; display:flex; align-items:center; gap:5px; }
+  .kpi-card .sub.good{ color:var(--good); font-weight:700; }
+  .kpi-card .sub.bad{ color:var(--crit); font-weight:700; }
+  .chip{ font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; }
+  .chip.up{ background:rgba(22,163,74,0.15); color:var(--good); }
+  .chip.down{ background:rgba(220,38,38,0.15); color:var(--crit); }
+  .chip.warn{ background:rgba(244,163,0,0.15); color:var(--warn); }
+
+  /* ---- Leaderboard (doctor ranking) ---- */
+  .leaderboard{ display:flex; flex-direction:column; gap:12px; max-height:560px; overflow-y:auto; padding-right:4px; }
+  .lb-row{ display:grid; grid-template-columns:26px minmax(130px,220px) 1fr 100px; align-items:center; gap:12px; }
+  .lb-rank{ font-size:13px; font-weight:800; color:var(--text-muted); text-align:center; }
+  .lb-rank.top1{ color:#e0a30a; } .lb-rank.top2{ color:#94a3b8; } .lb-rank.top3{ color:#c17a3f; }
+  .lb-name{ font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-name .lb-sub{ display:block; font-size:10.5px; font-weight:500; color:var(--text-muted); }
+  .lb-bar-track{ background:rgba(15,23,42,0.06); border-radius:6px; height:10px; overflow:hidden; }
+  .lb-bar-fill{ height:100%; border-radius:6px; animation: growbar 1.1s ease backwards; background:linear-gradient(90deg,var(--s1),var(--s7)); }
+  @keyframes growbar{ from{ width:0 !important; } }
+  .lb-value{ font-size:12px; text-align:right; font-variant-numeric:tabular-nums; color:var(--text-muted); }
+
+  /* ---- Heatmap calendar (daily revenue) ---- */
+  .heatmap{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .heat-cell{ aspect-ratio:1; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; border:1px solid rgba(15,23,42,0.05); position:relative; transition:transform .15s ease; }
+  .heat-cell:hover{ transform:scale(1.08); z-index:2; border-color:rgba(15,23,42,0.3); }
+  .heat-cell .amt{ display:none; }
+  .heat-cell:hover .amt{ display:block; position:absolute; bottom:105%; left:50%; transform:translateX(-50%); background:#1a2130; border:1px solid rgba(15,23,42,0.15); padding:4px 8px; border-radius:6px; font-size:10.5px; color:#fff; white-space:nowrap; font-weight:600; }
+  .heat-legend{ display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--text-muted); margin-top:12px; }
+  .heat-swatch{ width:14px; height:14px; border-radius:4px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px 14px; box-shadow:var(--shadow); transition: box-shadow .18s ease, transform .18s ease;
+    animation: fadeUp .4s ease both;
+  }
+  .card:hover{ box-shadow:var(--shadow-lg); }
+  .card .card-title{ font-size:13.5px; font-weight:700; margin-bottom:2px; }
+  .card .card-sub{ font-size:11.5px; color:var(--text-muted); margin-bottom:12px; }
+  .card canvas{ max-width:100%; }
+  .card.wide{ grid-column: 1 / -1; }
+  .chart-box{ position:relative; }
+
+  .insights{
+    background:var(--surface-1); border:1px solid var(--border); border-radius:14px;
+    padding:20px 22px; box-shadow:var(--shadow);
+  }
+  .insights h2{ font-size:15px; margin:0 0 4px; }
+  .insights .card-sub{font-size:11.5px;color:var(--text-muted);margin-bottom:14px;}
+  .insight-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px 22px; list-style:none; margin:0; padding:0; }
+  .insight-list li{ display:flex; gap:10px; font-size:13px; line-height:1.5; color:var(--text-1); }
+  .insight-list li .dot{
+    flex-shrink:0; width:20px;height:20px;border-radius:6px; margin-top:1px;
+    display:flex;align-items:center;justify-content:center; font-size:11px; font-weight:800; color:#fff;
+  }
+
+  table.dtbl{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  table.dtbl th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); border-bottom:1px solid var(--border); padding:6px 8px; position:sticky; top:0; background:var(--surface-1); }
+  table.dtbl td{ padding:6px 8px; border-bottom:1px solid var(--grid); font-variant-numeric:tabular-nums; }
+  table.dtbl tr:last-child td{ font-weight:800; border-top:2px solid var(--axis); border-bottom:none; background:rgba(42,120,214,.05); }
+  table.dtbl td.num{ text-align:right; }
+  .tbl-scroll{ overflow-x:auto; max-height:420px; overflow-y:auto; }
+
+  footer.foot{
+    max-width:1360px;margin:40px auto 0;padding:18px 22px 0; border-top:1px solid var(--border);
+    font-size:11.5px; color:var(--text-muted); text-align:center;
+  }
+
+  @media (max-width: 980px){
+    .kpi-grid{ grid-template-columns:repeat(2,1fr); }
+    .mini-stats{ grid-template-columns:repeat(2,1fr); }
+    .grid2{ grid-template-columns:1fr; }
+    .insight-list{ grid-template-columns:1fr; }
+    .brand h1{ font-size:14.5px; }
+  }
+  @media print{
+    header.topbar, .tabbar{ display:none; }
+    .tab-panel[hidden]{ display:block!important; }
+    .section{ break-inside: avoid; }
+  }
+  [hidden]{display:none!important;}
+</style>
+
+<div class="viz-root" id="root">
+  <div class="topband"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="upload-slot">
+        <button class="btn primary" id="uploadBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          <span id="uploadBtnLabel">Upload Excel</span>
+        </button>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm">
+      </div>
+      <div class="brand">
+        <div class="mark">💰</div>
+        <div>
+          <h1 id="brandTitle">Revenue Analysis Dashboard</h1>
+          <div class="meta" id="brandMeta">Upload a monthly Revenue Analysis workbook to begin</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="sync-status" id="syncStatus" hidden><span class="dot"></span><span id="syncLabel">Live</span></span>
+        <button class="btn" id="printBtn" hidden>Print / Save PDF</button>
+      </div>
+    </div>
+    <nav class="tabbar" id="tabbar" hidden>
+      <div class="tabbar-inner">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="mix">Revenue Mix</button>
+        <button class="tab-btn" data-tab="ip">IP Overview</button>
+        <button class="tab-btn" data-tab="dept">IP Departments</button>
+        <button class="tab-btn" data-tab="doctor">IP Doctors</button>
+        <button class="tab-btn" data-tab="op">OP Overview</button>
+        <button class="tab-btn" data-tab="pulse">Pulse</button>
+        <button class="tab-btn" data-tab="daily">Daily Trends</button>
+        <button class="tab-btn" data-tab="trends">Trends &amp; Forecast</button>
+        <button class="tab-btn" data-tab="ar">Collections &amp; AR</button>
+        <button class="tab-btn" data-tab="kpi">KPI Summary</button>
+        <button class="tab-btn" data-tab="perf">Payers</button>
+        <button class="tab-btn" data-tab="doctrend">Doctor Trends</button>
+        <button class="tab-btn" data-tab="bench">Benchmarks &amp; Ratios</button>
+        <button class="tab-btn" data-tab="scorecard">Scorecard</button>
+        <button class="tab-btn" data-tab="brief">Board Brief</button>
+      </div>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <section id="emptyState">
+      <div class="arrow">↖</div>
+      <h2>Bring your workbook to life</h2>
+      <p>Click <b>Upload Excel</b> in the top-left corner and choose your monthly Revenue Analysis workbook (KPI Summary, IP Dept Analysis, IP Doctor Analysis, Performance Summary, Daily Summary). Every chart, KPI and insight below rebuilds instantly — ready to present.</p>
+      <div class="trust">Nothing is uploaded anywhere — the file is parsed locally and never leaves this device.</div>
+      <div id="uploadError"></div>
+    </section>
+
+    <div id="dash" hidden>
+
+      <section class="tab-panel" data-tab="overview">
+        <div class="hero-band">
+          <div class="kpi-grid" id="kpiGrid"></div>
+          <div class="hero-pulse">
+            <div class="hero-pulse-head">
+              <span class="hero-pulse-label">Revenue Pulse — Daily Trend, Full Period</span>
+              <span class="hero-pulse-figure" id="heroPulseFigure"></span>
+            </div>
+            <div class="chart-box" style="height:80px;"><canvas id="chartHeroPulse"></canvas></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="grid2">
+            <div class="card wide insights">
+              <h2>Executive Summary</h2>
+              <div class="card-sub">Auto-generated from this workbook</div>
+              <ul class="insight-list" id="insightList"></ul>
+            </div>
+            <div class="card wide">
+              <div class="card-title">Watchlist — Needs Attention</div>
+              <div class="card-sub">Auto-flagged departments and doctors worth a closer look</div>
+              <div class="watchlist" id="watchList"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="mix" hidden>
+        <div class="section-head"><h2>Revenue Composition</h2><span class="part-tag">CROSS-CHANNEL</span></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Revenue by Channel</div>
+            <div class="card-sub">ER · IPD · OP Pharmacy · OPD · Pulse — period total</div>
+            <div class="chart-box" style="height:290px;"><canvas id="chartChannelMix"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Revenue by Payer Category</div>
+            <div class="card-sub">Insurance / Cash / PDC / TPA / Even, grouped from Performance Summary</div>
+            <div class="chart-box" style="height:290px;"><canvas id="chartPayerCategory"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Doctor Revenue by Speciality</div>
+            <div class="card-sub">Top 10 specialities by IP revenue</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chartSpecialityRevenue"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">IP Discharges by Department</div>
+            <div class="card-sub">Case volume, top 12 departments</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chartDeptDischarges"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Department Efficiency — Revenue vs Collection %</div>
+            <div class="card-sub">Bubble size = revenue; higher &amp; further right is healthier</div>
+            <div class="chart-box" style="height:340px;"><canvas id="chartDeptEfficiency"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="daily" hidden>
+        <div class="section-head"><h2>Daily Revenue Trend</h2><span class="part-tag">DAILY SUMMARY</span></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">Revenue by Source &amp; Date</div>
+            <div class="card-sub">Stacked by channel (Kare Xpert / Pulse), Grand Total overlaid</div>
+            <div class="chart-box" style="height:340px;"><canvas id="chartDailyTrend"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Average Revenue by Day of Week</div>
+            <div class="card-sub">Across all dates in the period</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartWeekday"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Revenue Target Achievement</div>
+            <div class="card-sub">Month-to-date vs. target</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartTarget"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Daily Revenue Calendar</div>
+            <div class="card-sub">Hover a day for the amount</div>
+            <div class="heatmap" id="heatmap"></div>
+            <div class="heat-legend"><span>Low</span><span class="heat-swatch" style="background:#e6eef5"></span><span class="heat-swatch" style="background:#9fc4d8"></span><span class="heat-swatch" style="background:#4b93b5"></span><span class="heat-swatch" style="background:#1c7293"></span><span>High</span></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Date-wise Revenue Detail</div>
+            <div class="card-sub">Full daily breakdown by source, as in Daily Summary</div>
+            <div class="tbl-scroll"><table class="dtbl" id="dailyTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="trends" hidden>
+        <div class="section-head"><h2>Trends &amp; Forecast</h2><span class="part-tag">PACE &amp; PROJECTION</span></div>
+        <div class="mini-stats" id="trendStats"></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">Cumulative Revenue vs. Linear Pace to Target</div>
+            <div class="card-sub">Actual cumulative revenue against an even daily pace toward the monthly target</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartCumulative"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Day-over-Day Growth %</div>
+            <div class="card-sub">Change in daily revenue vs. the previous reported day</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartDoD"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">3-Day Moving Average</div>
+            <div class="card-sub">Smoothed daily revenue trend</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartMA"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="ar" hidden>
+        <div class="section-head"><h2>Collections &amp; Accounts Receivable</h2><span class="part-tag">AR HEALTH</span></div>
+        <div class="mini-stats" id="arStats"></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">Billed → Collected → Pending</div>
+            <div class="card-sub">IP revenue funnel, across all departments</div>
+            <div class="chart-box" style="height:220px;"><canvas id="chartARFunnel"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Departments by Collection Efficiency</div>
+            <div class="card-sub">How many earning departments fall in each collection-% band</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartCollDist"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Top 10 Departments by Pending Amount</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartTopPending"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="kpi" hidden>
+        <div class="section-head"><h2>KPI Summary Analytics</h2><span class="part-tag">KPI SUMMARY</span></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">IPD Net Revenue by Payer Type</div>
+            <div class="card-sub">Share of net billed revenue</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartPayerMix"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Gross vs Discount vs Net, by Payer Type</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartGrossNet"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">ALOS by Payer Type</div>
+            <div class="card-sub">Average length of stay, days</div>
+            <div class="chart-box" style="height:260px;"><canvas id="chartAlosPayer"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">ARPOB by Payer Type</div>
+            <div class="card-sub">Average revenue per occupied bed</div>
+            <div class="chart-box" style="height:260px;"><canvas id="chartArpobPayer"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Discharge Count by Payer Type</div>
+            <div class="card-sub">Number of discharges billed per payer type</div>
+            <div class="chart-box" style="height:260px;"><canvas id="chartPayerCount"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Revenue Trend</div>
+            <div class="card-sub">Daily grand total revenue across the reported period</div>
+            <div class="chart-box" style="height:260px;"><canvas id="chartKpiTrend"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="ip" hidden>
+        <div class="section-head"><h2>IP Overview — Inpatient &amp; ER</h2><span class="part-tag">IP CHANNEL</span></div>
+        <div class="mini-stats" id="ipStats"></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">IP Revenue Split — IPD vs ER</div>
+            <div class="card-sub">ER counted as part of IP revenue</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartIPSplit"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Daily IP Revenue Trend (IPD + ER)</div>
+            <div class="card-sub">Stacked by source, IP total overlaid</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chartIPDailyTrend"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="dept" hidden>
+        <div class="section-head"><h2>IP Department Analysis</h2><span class="part-tag" id="deptCount">IP DEPT ANALYSIS</span></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">All Departments by Revenue</div>
+            <div class="card-sub">Every department in IP Dept Analysis, sorted by revenue</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartDeptRevenue"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Department Concentration — Pareto</div>
+            <div class="card-sub">Cumulative % of IP revenue by department</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chartDeptPareto"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Collection vs Pending — All Departments</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartDeptCollection"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">ALOS by Department — All Departments</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartDeptAlos"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Consumption % vs Contribution % — All Departments</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartDeptConsumption"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Department Detail Table</div>
+            <div class="card-sub">Every department, every metric</div>
+            <div class="tbl-scroll"><table class="dtbl" id="deptTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="doctor" hidden>
+        <div class="section-head"><h2>IP Doctor Analysis</h2><span class="part-tag">IP DOCTOR ANALYSIS</span></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">All Revenue-Generating Doctors</div>
+            <div class="card-sub">Every doctor, ranked by IP billed revenue · gold/silver/bronze for the top 3 · scroll for the full roster</div>
+            <div class="leaderboard" id="docLeaderboard"></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">All Doctors by Revenue</div>
+            <div class="card-sub">Every treating doctor in IP Doctor Analysis, sorted by revenue</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartDoctorRevenue"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Doctor Revenue by Association Type</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartDoctorAssoc"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Doctor Detail Table</div>
+            <div class="card-sub">Every doctor, speciality, association and revenue</div>
+            <div class="tbl-scroll"><table class="dtbl" id="doctorTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="op" hidden>
+        <div class="section-head"><h2>OP Overview — Outpatient &amp; Pharmacy</h2><span class="part-tag">OP CHANNEL</span></div>
+        <div class="mini-stats" id="opStats"></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">OP Revenue Split — OPD vs OP Pharmacy</div>
+            <div class="card-sub">OP Pharmacy shown as its own column</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartOPSplit"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Daily OP Revenue Trend</div>
+            <div class="card-sub">OPD-Even, OPD-Non Even and OP Pharmacy as separate series</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chartOPDailyTrend"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">All OP Departments by Revenue</div>
+            <div class="card-sub">Clinical department breakdown, including Pharmacy</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartOpDept"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="pulse" hidden>
+        <div class="section-head"><h2>Pulse — Consultation Channel</h2><span class="part-tag">PULSE CHANNEL</span></div>
+        <div class="mini-stats" id="pulseStats"></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Pulse Revenue Split — Even vs Non-Even Member</div>
+            <div class="chart-box" style="height:280px;"><canvas id="chartPulseSplit"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Daily Pulse Revenue Trend</div>
+            <div class="card-sub">Even Member and Non-Even Member, Pulse total overlaid</div>
+            <div class="chart-box" style="height:300px;"><canvas id="chartPulseDailyTrend"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="perf" hidden>
+        <div class="section-head"><h2>Payer Analysis</h2><span class="part-tag">PAYER MIX</span></div>
+        <div class="mini-stats" id="payerStats"></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">All Payers by Revenue</div>
+            <div class="card-sub">Every payer type combined</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartTopPayers"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Case Count by Payer</div>
+            <div class="card-sub">Count of procedures billed per payer</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartPayerCases"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Case-wise Payer Detail</div>
+            <div class="card-sub">Every payer, revenue, case count and average revenue per case</div>
+            <div class="tbl-scroll"><table class="dtbl" id="payerTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="doctrend" hidden>
+        <div class="section-head"><h2>Doctor Trends</h2><span class="part-tag">DOCTOR MIX</span></div>
+        <div class="mini-stats" id="doctrendStats"></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">Individual Doctor Lookup</div>
+            <div class="card-sub">Pick any doctor to see their full stats</div>
+            <select class="select-input" id="doctorSelect"></select>
+            <div class="mini-stats" id="doctorDetailStats" style="margin-top:14px;"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Doctor Revenue Distribution</div>
+            <div class="card-sub">How many doctors fall in each revenue band</div>
+            <div class="chart-box" style="height:290px;"><canvas id="chartDoctorDist"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Doctor Revenue Concentration — Pareto</div>
+            <div class="card-sub">Cumulative % of IP doctor revenue, top 20 doctors</div>
+            <div class="chart-box" style="height:290px;"><canvas id="chartDoctorPareto"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Active vs. Zero-Revenue Doctors by Speciality</div>
+            <div class="card-sub">Top specialities by doctor headcount</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartDoctorActivity"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="bench" hidden>
+        <div class="section-head"><h2>Benchmarks &amp; Ratios</h2><span class="part-tag">OPERATING RATIOS</span></div>
+        <div class="mini-stats" id="benchStats"></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">Daily OPD Revenue Trend</div>
+            <div class="card-sub">From the Daily Summary OPD revenue series</div>
+            <div class="chart-box" style="height:290px;"><canvas id="chartOPDTrend"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Average Bill Value per Discharge, by Department</div>
+            <div class="card-sub">Revenue ÷ discharges — case value, not just case volume</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartAvgBillValue"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">ALOS vs. ARPOB by Payer Type</div>
+            <div class="card-sub">Bubble size = revenue per bed-day mix; ideally short stay, high ARPOB (top-left)</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartAlosArpobScatter"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="scorecard" hidden>
+        <div class="section-head"><h2>Department Scorecard</h2><span class="part-tag">COMPOSITE RANKING</span></div>
+        <div class="card wide">
+          <div class="card-title">Department Lookup</div>
+          <div class="card-sub">Pick any department to see its score breakdown</div>
+          <select class="select-input" id="deptSelect"></select>
+          <div class="mini-stats" id="deptDetailStats" style="margin-top:14px;"></div>
+        </div>
+        <div class="mini-stats" id="scorecardStats" style="margin-top:16px;"></div>
+        <div class="grid2">
+          <div class="card wide">
+            <div class="card-title">Top Departments by Composite Score</div>
+            <div class="card-sub">Blend of revenue share, collection % and contribution % — 0 to 100</div>
+            <div class="chart-box" style="height:320px;"><canvas id="chartScorecard"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-title">Full Scorecard</div>
+            <div class="card-sub">Every earning department, ranked by composite score</div>
+            <div class="tbl-scroll"><table class="dtbl" id="scorecardTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab="brief" hidden>
+        <div class="section-head"><h2>Board Brief — One-Page Summary</h2><span class="part-tag">PRINT-READY</span></div>
+        <div class="card wide" id="briefCard">
+          <div class="brief-head">
+            <div>
+              <div class="brief-title" id="briefTitle"></div>
+              <div class="brief-sub" id="briefSub"></div>
+            </div>
+            <div class="chart-box" style="height:110px;width:110px;flex-shrink:0;"><canvas id="chartBriefTarget"></canvas></div>
+          </div>
+          <div class="mini-stats" id="briefStats"></div>
+          <div class="brief-cols">
+            <div>
+              <div class="brief-col-title">Key Highlights</div>
+              <ul class="insight-list" id="briefInsights" style="grid-template-columns:1fr;"></ul>
+            </div>
+            <div>
+              <div class="brief-col-title">Needs Attention</div>
+              <div class="watchlist" id="briefWatch"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <footer class="foot" id="pageFoot" hidden>
+    Built from <span id="footFile"></span> — every figure above is recomputed live from that file, entirely in your browser.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PALETTE = ['#1c7293','#16a34a','#f4a300','#7c4fe0','#db2777','#ea7317','#0891b2','#dc2626','#3b6fe0','#84cc16'];
+  var GOOD = '#16a34a', CRIT = '#dc2626';
+  var fmtINR = new Intl.NumberFormat('en-IN', {maximumFractionDigits:0});
+  function rupee(v){ if (v===null||v===undefined||isNaN(v)) return '—'; return '₹' + fmtINR.format(Math.round(v)); }
+  function fmtShort(v){
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    v = Math.round(v); var a = Math.abs(v);
+    if (a>=1e7) return '₹'+(v/1e7).toFixed(2)+' Cr';
+    if (a>=1e5) return '₹'+(v/1e5).toFixed(2)+' L';
+    return '₹'+v.toLocaleString('en-IN');
+  }
+  function pct(v){ if (v===null||v===undefined||isNaN(v)) return '—'; return (v*100).toFixed(1) + '%'; }
+  function num(v,d){ d = d===undefined?1:d; if (v===null||v===undefined||isNaN(v)) return '—'; return v.toFixed(d); }
+
+  function isDark(){
+    var t = document.documentElement.getAttribute('data-theme');
+    if (t==='dark') return true;
+    if (t==='light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function ink(){ return isDark() ? '#ffffff' : '#0b0b0b'; }
+  function ink2(){ return isDark() ? '#c3c2b7' : '#52514e'; }
+  function grid(){ return isDark() ? '#2c2c2a' : '#e1e0d9'; }
+  function surface(){ return isDark() ? '#1a1a19' : '#fcfcfb'; }
+
+  Chart.defaults.font.family = "system-ui,-apple-system,'Segoe UI',sans-serif";
+  Chart.defaults.font.size = 11.5;
+
+  // ---------------------------------------------------------------
+  // Sheet lookup helpers
+  // ---------------------------------------------------------------
+  function normName(s){ return String(s||'').toLowerCase().replace(/[^a-z]/g,''); }
+  function findSheet(wb, candidates){
+    var names = wb.SheetNames;
+    for (var i=0;i<candidates.length;i++){
+      var target = normName(candidates[i]);
+      for (var j=0;j<names.length;j++){
+        if (normName(names[j]) === target) return wb.Sheets[names[j]];
+      }
+    }
+    for (var i2=0;i2<candidates.length;i2++){
+      var target2 = normName(candidates[i2]);
+      for (var j2=0;j2<names.length;j2++){
+        if (normName(names[j2]).indexOf(target2.slice(0,6)) !== -1) return wb.Sheets[names[j2]];
+      }
+    }
+    return null;
+  }
+  function aoa(sheet){
+    // Force the array to start at A1 (row0/col0) regardless of the sheet's
+    // actual used range — SheetJS otherwise trims leading blank rows/columns,
+    // which silently shifts every hardcoded row/column index below.
+    if (!sheet) return [];
+    var rng = sheet['!ref'] ? XLSX.utils.decode_range(sheet['!ref']) : {s:{r:0,c:0}, e:{r:0,c:0}};
+    rng.s.r = 0; rng.s.c = 0;
+    return XLSX.utils.sheet_to_json(sheet, {header:1, raw:true, defval:null, range: rng});
+  }
+  function n(v){ var x = parseFloat(v); return isNaN(x) ? 0 : x; }
+  function s(v){ return v===null||v===undefined ? '' : String(v).trim(); }
+
+  // ---------------------------------------------------------------
+  // Parse workbook into a flat data model
+  // ---------------------------------------------------------------
+  function parseWorkbook(wb){
+    var D = {};
+
+    var kpiSheet = findSheet(wb, ['KPI Summary']);
+    var deptSheet = findSheet(wb, ['IP Dept Analysis','IP Department Analysis']);
+    var docSheet = findSheet(wb, ['IP Doctor Analysis']);
+    var perfSheet = findSheet(wb, ['Performace Summary','Performance Summary']);
+    var dailySheet = findSheet(wb, ['Daily Summary']);
+
+    var missing = [];
+    if (!kpiSheet) missing.push('KPI Summary');
+    if (!deptSheet) missing.push('IP Dept Analysis');
+    if (!docSheet) missing.push('IP Doctor Analysis');
+    if (!perfSheet) missing.push('Performance Summary');
+    if (!dailySheet) missing.push('Daily Summary');
+    if (missing.length){
+      throw new Error('Could not find these tabs in the workbook: ' + missing.join(', ') + '. Make sure this is a monthly Revenue Analysis file with the standard tab names.');
+    }
+
+    // ---- KPI Summary ----
+    var K = aoa(kpiSheet);
+    D.titlePeriod = s(K[1] && K[1][1]) || '';
+    D.payerDiscount = [];
+    for (var r=6;r<=10;r++){
+      if (!K[r]) continue;
+      var row = K[r];
+      if (s(row[7])==='') continue;
+      D.payerDiscount.push({ type:s(row[7]), gross:n(row[8]), discount:n(row[9]), net:n(row[10]) });
+    }
+    // Row positions of the "operating" payer table and the quick-stat metrics
+    // box can shift by one or more rows between monthly workbooks (an inserted
+    // note row, an extra column, etc — this has already happened at least
+    // twice). Rather than trust fixed row numbers, locate the payer-operating
+    // table by its own header row ("Particulars") and locate each quick-stat
+    // by scanning for its label text, so a shifted layout still parses
+    // correctly instead of silently reading blank/wrong cells.
+    function scanMetric(labelRegex, rowRange, maxCol){
+      maxCol = maxCol===undefined ? 6 : maxCol;
+      for (var r=rowRange[0]; r<=rowRange[1] && r<K.length; r++){
+        var row = K[r]; if (!row) continue;
+        for (var c=0; c<=maxCol && c<row.length; c++){
+          if (labelRegex.test(s(row[c]))){
+            for (var c2=c+1; c2<row.length; c2++){
+              var v = row[c2];
+              if (v!==null && v!==undefined && v!=='' && !isNaN(parseFloat(v))) return n(v);
+            }
+          }
+        }
+      }
+      return 0;
+    }
+
+    D.payerOperating = [];
+    var opHeaderRow = -1;
+    for (var rh=8; rh<=35 && rh<K.length; rh++){
+      if (K[rh] && /particulars/i.test(s(K[rh][7]))) { opHeaderRow = rh; break; }
+    }
+    if (opHeaderRow === -1) opHeaderRow = 15; // fallback to the original template's layout
+    for (var r2=opHeaderRow+1; r2<=opHeaderRow+10 && r2<K.length; r2++){
+      var row2 = K[r2];
+      if (!row2) continue;
+      var typeTxt = s(row2[7]);
+      if (!typeTxt) continue;
+      if (/total/i.test(typeTxt)) break;
+      D.payerOperating.push({ type:typeTxt, count:n(row2[10]), alos:n(row2[11]), arpob:n(row2[12]) });
+    }
+
+    D.opMetrics = {
+      alos: scanMetric(/\balos\b/i, [8,35]),
+      avgBeds: scanMetric(/avg.*occupied.*bed|occupied.*beds?.*day|average.*(occupied)?\s*bed/i, [8,35]),
+      occupancy: scanMetric(/occupancy/i, [8,35]),
+      arpobDaily: scanMetric(/arpob/i, [8,35])
+    };
+
+    // ---- IP Dept Analysis ----
+    var Dept = aoa(deptSheet);
+    D.depts = [];
+    for (var r3=6;r3<=33;r3++){
+      if (!Dept[r3]) continue;
+      var rowD = Dept[r3];
+      var name = s(rowD[1]);
+      if (!name || /grand total/i.test(name)) continue;
+      D.depts.push({
+        name:name, discharges:n(rowD[2]), alos:n(rowD[4]), revenue:n(rowD[5]),
+        collection:n(rowD[7]), pending:n(rowD[8]), consumption:n(rowD[10]),
+        consumptionPct:n(rowD[11]), contribution:n(rowD[12]), contributionPct:n(rowD[13])
+      });
+    }
+    D.deptTotalRevenue = D.depts.reduce(function(a,d){return a+d.revenue;},0);
+    D.deptTotalCollection = D.depts.reduce(function(a,d){return a+d.collection;},0);
+    D.deptTotalPending = D.depts.reduce(function(a,d){return a+d.pending;},0);
+
+    // ---- IP Doctor Analysis ----
+    var Doc = aoa(docSheet);
+    D.doctors = [];
+    for (var r4=6;r4<=63;r4++){
+      if (!Doc[r4]) continue;
+      var rowO = Doc[r4];
+      var dname = s(rowO[1]);
+      if (!dname || /grand total/i.test(dname)) continue;
+      D.doctors.push({
+        name:dname, speciality:s(rowO[2]), association:s(rowO[3]),
+        discharges:n(rowO[4]), patientDays:n(rowO[5]), alos:n(rowO[6]),
+        revenue:n(rowO[7]), pctRevenue:n(rowO[8]),
+        collection:n(rowO[9]), pending:n(rowO[10]), collectionPct:n(rowO[11]),
+        consumption:n(rowO[12]), consumptionPct:n(rowO[13]),
+        contribution:n(rowO[14]), contributionPct:n(rowO[15])
+      });
+    }
+    D.assocMix = {};
+    D.doctors.forEach(function(doc){
+      var key = doc.association || 'Other';
+      D.assocMix[key] = (D.assocMix[key]||0) + doc.revenue;
+    });
+
+    // ---- Performance Summary ----
+    var Perf = aoa(perfSheet);
+    D.opDepts = [];
+    for (var r5=4;r5<=41;r5++){
+      if (!Perf[r5]) continue;
+      var rowP = Perf[r5];
+      var opn = s(rowP[13]);
+      if (!opn || /grand total/i.test(opn)) continue;
+      D.opDepts.push({ name:opn, revenue:n(rowP[14]) });
+    }
+    D.payers = [];
+    for (var r6=4;r6<=21;r6++){
+      if (!Perf[r6]) continue;
+      var rowY = Perf[r6];
+      var pn = s(rowY[42]);
+      if (!pn || /^total$/i.test(pn)) continue;
+      D.payers.push({ name:pn, type:s(rowY[41]), revenue:n(rowY[43]), count:n(rowY[44]) });
+    }
+
+    // ---- Daily Summary ----
+    var Day = aoa(dailySheet);
+    var hdrRow = Day[5] || [];
+    var dateCols = [];
+    for (var c=4; c<=33; c++){
+      if (hdrRow[c]!==null && hdrRow[c]!==undefined && hdrRow[c]!=='') dateCols.push(c);
+    }
+    function toDate(v){
+      if (v instanceof Date) return v;
+      if (typeof v === 'number') { var epoch = new Date(Date.UTC(1899,11,30)); return new Date(epoch.getTime() + v*86400000); }
+      var d = new Date(v); return isNaN(d) ? null : d;
+    }
+    D.dates = dateCols.map(function(c){ return toDate(hdrRow[c]); });
+    var rowsDef = [
+      {key:'er', label:'ER', idx:6, group:'Kare Xpert'},
+      {key:'ipd', label:'IPD', idx:7, group:'Kare Xpert'},
+      {key:'opPharmacy', label:'OP Pharmacy', idx:8, group:'Kare Xpert'},
+      {key:'opdEven', label:'OPD-Even', idx:9, group:'Kare Xpert'},
+      {key:'opdNonEven', label:'OPD-Non Even', idx:10, group:'Kare Xpert'},
+      {key:'evenMember', label:'Even Member', idx:11, group:'Pulse'},
+      {key:'nonEvenMember', label:'Non Even Member', idx:12, group:'Pulse'},
+      {key:'grandTotal', label:'Grand Total', idx:13, group:null}
+    ];
+    D.dailyRows = rowsDef.map(function(rd){
+      var arr = Day[rd.idx] || [];
+      return { label:rd.label, group:rd.group, values: dateCols.map(function(c){ return n(arr[c]); }), total: n(arr[34]) };
+    });
+    D.dailyByKey = {};
+    rowsDef.forEach(function(rd,i){ D.dailyByKey[rd.key] = D.dailyRows[i]; });
+
+    var targetRow = Day[15] || [];
+    D.target = n(targetRow[34]);
+    D.targetPct = n(targetRow[35]);
+    var opdRow = Day[16] || [];
+    D.opdRevenueSeries = dateCols.map(function(c){ return n(opdRow[c]); });
+
+    return D;
+  }
+
+  // ---------------------------------------------------------------
+  // Rendering
+  // ---------------------------------------------------------------
+  var CH = {};
+  function baseGridOpts(){
+    return {
+      x: { grid:{ display:false }, ticks:{ color: ink2() } , border:{ color: grid() } },
+      y: { grid:{ color: grid() }, ticks:{ color: ink2() }, border:{ display:false }, beginAtZero:true }
+    };
+  }
+  function legendOpts(show){
+    return { display: !!show, position:'bottom', labels:{ color: ink2(), boxWidth:12, boxHeight:12, padding:14, font:{size:11} } };
+  }
+  function mk(id, config){
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (CH[id]) CH[id].destroy();
+    CH[id] = new Chart(el.getContext('2d'), config);
+  }
+
+  function topN(list, key, N){
+    return list.slice().sort(function(a,b){ return b[key]-a[key]; }).slice(0,N);
+  }
+
+  function fmtDate(d){
+    if (!d) return '';
+    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return String(d.getUTCDate()).padStart(2,'0')+'-'+months[d.getUTCMonth()]+'-'+d.getUTCFullYear();
+  }
+
+  // ---- animated count-up for KPI values ----
+  function countUp(el, endVal, formatFn, duration){
+    duration = duration || 900;
+    var startVal = 0, startTime = null;
+    function ease(t){ return 1 - Math.pow(1-t, 3); }
+    function step(ts){
+      if (!startTime) startTime = ts;
+      var p = Math.min((ts-startTime)/duration, 1);
+      var cur = startVal + (endVal-startVal) * ease(p);
+      el.textContent = formatFn(cur);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = formatFn(endVal);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function computeRunRate(D){
+    var vals = D.dailyByKey.grandTotal.values;
+    var elapsedDays = vals.filter(function(v){ return v>0; }).length || 1;
+    var totalDays = D.dates.length || elapsedDays;
+    var achieved = D.dailyByKey.grandTotal.total;
+    var avgDaily = achieved / elapsedDays;
+    var projected = avgDaily * totalDays;
+    return { elapsedDays:elapsedDays, totalDays:totalDays, achieved:achieved, avgDaily:avgDaily, projected:projected };
+  }
+
+  function renderKPIs(D){
+    var el = document.getElementById('kpiGrid');
+    var collPct = D.deptTotalRevenue ? D.deptTotalCollection/D.deptTotalRevenue : 0;
+    var rr = computeRunRate(D);
+    var GLOW = ['rgba(28,114,147,.25)','rgba(22,163,74,.25)','rgba(220,38,38,.22)','rgba(244,163,0,.25)','rgba(124,79,224,.25)','rgba(8,145,178,.25)','rgba(234,115,23,.25)','rgba(219,39,119,.22)','rgba(59,111,224,.25)','rgba(132,204,22,.25)'];
+    var cards = [
+      { label:'Total IP Revenue', raw:D.deptTotalRevenue, fmt:fmtShort, sub:'IP Dept Analysis', icon:'💰' },
+      { label:'Total Collection', raw:D.deptTotalCollection, fmt:fmtShort, sub:'Collection efficiency ' + pct(collPct), cls: collPct>=0.6?'good':'bad', icon:'✅' },
+      { label:'Total Pending', raw:D.deptTotalPending, fmt:fmtShort, sub: pct(D.deptTotalRevenue?D.deptTotalPending/D.deptTotalRevenue:0) + ' of revenue', icon:'⏳' },
+      { label:'Collection %', raw:collPct*100, fmt:function(v){return v.toFixed(1)+'%';}, sub:'Across all IP departments', icon:'📊' },
+      { label:'ALOS', raw:D.opMetrics.alos, fmt:function(v){return v.toFixed(2)+' days';}, sub:'Average length of stay', icon:'🛏️' },
+      { label:'Occupancy %', raw:D.opMetrics.occupancy*100, fmt:function(v){return v.toFixed(1)+'%';}, sub: num(D.opMetrics.avgBeds,1) + ' avg. occupied beds/day', icon:'🏥' },
+      { label:'ARPOB (Daily)', raw:D.opMetrics.arpobDaily, fmt:fmtShort, sub:'Per occupied bed, per day', icon:'📈' },
+      { label:'Revenue Target', raw:D.targetPct*100, fmt:function(v){return v.toFixed(1)+'%';}, sub: fmtShort(D.dailyByKey.grandTotal.total) + ' of ' + fmtShort(D.target), cls: D.targetPct>=0.9?'good':(D.targetPct<0.5?'bad':''), icon:'🎯' },
+      { label:'Avg Daily Run-Rate', raw:rr.avgDaily, fmt:fmtShort, sub: rr.elapsedDays + ' active days counted', icon:'⚡' },
+      { label:'Projected Month-End', raw:rr.projected, fmt:fmtShort, sub:'at current run-rate · ' + pct(D.target?rr.projected/D.target:0) + ' of target', cls: rr.projected>=D.target?'good':'bad', icon:'🔮' }
+    ];
+    el.innerHTML = cards.map(function(c,i){
+      return '<div class="kpi-card" style="animation-delay:'+(i*40)+'ms;--glow:'+GLOW[i%GLOW.length]+'"><div class="kpi-top"><span class="label">'+c.label+'</span><span class="kpi-icon">'+c.icon+'</span></div><div class="value" data-idx="'+i+'">0</div><div class="sub'+(c.cls?(' '+c.cls):'')+'">'+c.sub+'</div></div>';
+    }).join('');
+    var valEls = el.querySelectorAll('.value');
+    valEls.forEach(function(ve){
+      var c = cards[+ve.getAttribute('data-idx')];
+      countUp(ve, c.raw, c.fmt);
+    });
+  }
+
+  function renderInsights(D){
+    var items = [];
+    var topDept = topN(D.depts,'revenue',1)[0];
+    var topDoc = topN(D.doctors,'revenue',1)[0];
+    var collPct = D.deptTotalRevenue ? D.deptTotalCollection/D.deptTotalRevenue : 0;
+
+    if (topDept) items.push({ color:PALETTE[0], icon:'1', text:'<b>'+topDept.name+'</b> is the top revenue department, contributing '+rupee(topDept.revenue)+' ('+pct(topDept.revenue/D.deptTotalRevenue)+' of total IP revenue).' });
+    if (topDoc) items.push({ color:PALETTE[1], icon:'2', text:'<b>'+topDoc.name+'</b> leads all treating doctors with '+rupee(topDoc.revenue)+' in IP revenue.' });
+    items.push({ color: collPct>=0.6?GOOD:CRIT, icon: collPct>=0.6?'✓':'!', text:'Collection efficiency stands at <b>'+pct(collPct)+'</b> ('+rupee(D.deptTotalCollection)+' collected of '+rupee(D.deptTotalRevenue)+' billed), leaving '+rupee(D.deptTotalPending)+' pending.' });
+
+    var vals = D.dailyByKey.grandTotal.values;
+    var half = Math.floor(vals.length/2);
+    var firstHalf = vals.slice(0,half).reduce(function(a,b){return a+b;},0) / Math.max(half,1);
+    var secondHalf = vals.slice(half).reduce(function(a,b){return a+b;},0) / Math.max(vals.length-half,1);
+    var trendUp = secondHalf >= firstHalf;
+    items.push({ color: trendUp?GOOD:'#eda100', icon: trendUp?'↑':'↓', text:'Daily revenue is trending <b>'+(trendUp?'up':'down')+'</b> across the reported period (avg. '+rupee(firstHalf)+' → '+rupee(secondHalf)+' per day).' });
+
+    items.push({ color:PALETTE[6], icon:'%', text:'Month-to-date revenue has reached <b>'+pct(D.targetPct)+'</b> of the '+rupee(D.target)+' target ('+rupee(D.dailyByKey.grandTotal.total)+' achieved so far).' });
+
+    var rr = computeRunRate(D);
+    items.push({ color: rr.projected>=D.target?GOOD:'#f4a300', icon:'🔮', text:'At the current run-rate of <b>'+fmtShort(rr.avgDaily)+'/day</b>, the month is projected to close at <b>'+fmtShort(rr.projected)+'</b> — '+pct(D.target?rr.projected/D.target:0)+' of target.' });
+
+    var nz = vals.map(function(v,i){ return {v:v, i:i}; }).filter(function(x){ return x.v>0; });
+    if (nz.length){
+      var best = nz.reduce(function(a,b){ return b.v>a.v?b:a; });
+      var worst = nz.reduce(function(a,b){ return b.v<a.v?b:a; });
+      items.push({ color:PALETTE[3], icon:'★', text:'Best single day was <b>'+fmtDate(D.dates[best.i])+'</b> at '+rupee(best.v)+'; the softest reporting day was '+fmtDate(D.dates[worst.i])+' at '+rupee(worst.v)+'.' });
+    }
+
+    var assocKeys = Object.keys(D.assocMix);
+    if (assocKeys.length){
+      var topAssoc = assocKeys.sort(function(a,b){return D.assocMix[b]-D.assocMix[a];})[0];
+      var assocTotal = assocKeys.reduce(function(a,k){return a+D.assocMix[k];},0);
+      items.push({ color:PALETTE[4], icon:'D', text:'<b>'+topAssoc+'</b> doctors bring in the largest share of IP revenue ('+pct(D.assocMix[topAssoc]/assocTotal)+').' });
+    }
+
+    if (D.opDepts.length){
+      var topOp = topN(D.opDepts,'revenue',1)[0];
+      items.push({ color:PALETTE[2], icon:'OP', text:'<b>'+topOp.name+'</b> is the top-earning OP department at '+rupee(topOp.revenue)+'.' });
+    }
+
+    document.getElementById('insightList').innerHTML = items.map(function(it){
+      return '<li><span class="dot" style="background:'+it.color+'">'+it.icon+'</span><span>'+it.text+'</span></li>';
+    }).join('');
+  }
+
+  function renderHeroPulse(D){
+    var vals = D.dailyByKey.grandTotal.values;
+    var labels = D.dates.map(fmtDate);
+    var rr = computeRunRate(D);
+    var figEl = document.getElementById('heroPulseFigure');
+    if (figEl) figEl.textContent = rupee(rr.achieved) + ' so far · ' + fmtShort(rr.avgDaily) + '/day avg';
+    var el = document.getElementById('chartHeroPulse');
+    if (!el) return;
+    var ctx = el.getContext('2d');
+    var grad = ctx.createLinearGradient(0,0,0,80);
+    grad.addColorStop(0, isDark() ? 'rgba(58,160,198,.45)' : 'rgba(28,114,147,.35)');
+    grad.addColorStop(1, 'rgba(28,114,147,0)');
+    mk('chartHeroPulse', { type:'line', data:{ labels:labels, datasets:[{ data:vals, borderColor: PALETTE[0], backgroundColor:grad, fill:true, borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:.35 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx2){ return rupee(ctx2.parsed.y); }, title:function(items){ return items[0] && items[0].label; } } } },
+        scales:{ x:{ display:false }, y:{ display:false, beginAtZero:true } },
+        interaction:{ mode:'index', intersect:false } } });
+  }
+
+  function computeWatchlistRows(D){
+    var rows = [];
+    var earners = D.depts.filter(function(d){ return d.revenue>0; });
+
+    var lowColl = earners.filter(function(d){ return d.revenue ? (d.collection/d.revenue) < 0.3 : false; })
+      .sort(function(a,b){ return (a.collection/a.revenue) - (b.collection/b.revenue); }).slice(0,2);
+    lowColl.forEach(function(d){
+      rows.push({ crit:true, tag:'LOW COLLECTION', text: '<b>'+d.name+'</b> has collected only '+pct(d.revenue?d.collection/d.revenue:0)+' of '+rupee(d.revenue)+' billed — '+rupee(d.pending)+' pending.' });
+    });
+
+    var thinMargin = earners.filter(function(d){ return d.contributionPct>0 && d.contributionPct<0.75; })
+      .sort(function(a,b){ return a.contributionPct-b.contributionPct; }).slice(0,2);
+    thinMargin.forEach(function(d){
+      rows.push({ crit:false, tag:'THIN MARGIN', text: '<b>'+d.name+'</b> is retaining only '+pct(d.contributionPct)+' of revenue after consumption costs ('+rupee(d.consumption)+' consumed).' });
+    });
+
+    var negContrib = D.depts.filter(function(d){ return d.contribution<0; });
+    negContrib.forEach(function(d){
+      rows.push({ crit:true, tag:'NEGATIVE CONTRIBUTION', text: '<b>'+d.name+'</b> shows negative contribution ('+rupee(d.contribution)+') — consumption exceeded billed revenue.' });
+    });
+
+    var idleDocs = D.doctors.filter(function(d){ return d.revenue===0 && /visiting|part time|full time/i.test(d.association); });
+    if (idleDocs.length){
+      rows.push({ crit:false, tag:'ZERO ACTIVITY', text: '<b>'+idleDocs.length+' onboarded doctors</b> recorded zero IP revenue this period (e.g. '+idleDocs.slice(0,3).map(function(d){return d.name;}).join(', ')+(idleDocs.length>3?', …':'')+').' });
+    }
+
+    if (D.targetPct < 0.5){
+      rows.push({ crit:true, tag:'TARGET RISK', text: 'Month-to-date achievement is at <b>'+pct(D.targetPct)+'</b> of target — pace needs to accelerate to close the gap.' });
+    }
+    return rows;
+  }
+
+  function paintWatchlist(elId, rows, limit){
+    var el = document.getElementById(elId);
+    if (!el) return;
+    if (!rows.length){
+      el.innerHTML = '<div class="watch-row" style="background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.22);"><span class="wtag" style="background:var(--good);">ALL CLEAR</span><span>No departments or doctors are currently flagged for this period.</span></div>';
+      return;
+    }
+    el.innerHTML = rows.slice(0, limit||6).map(function(r){
+      return '<div class="watch-row'+(r.crit?' crit':'')+'"><span class="wtag">'+r.tag+'</span><span>'+r.text+'</span></div>';
+    }).join('');
+  }
+
+  function renderWatchlist(D){
+    paintWatchlist('watchList', computeWatchlistRows(D), 6);
+  }
+
+  function miniStatsHTML(stats){
+    return stats.map(function(s){
+      return '<div class="mini-stat"><div class="mini-label">'+s.label+'</div><div class="mini-value">'+s.value+'</div><div class="mini-sub">'+s.sub+'</div></div>';
+    }).join('');
+  }
+
+  function renderIPOverview(D){
+    var ipd = D.dailyByKey.ipd, er = D.dailyByKey.er;
+    var ipdTotal = ipd.total, erTotal = er.total, ipTotal = ipdTotal + erTotal;
+
+    var el = document.getElementById('ipStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Total IP Revenue', value:rupee(ipTotal), sub:'IPD + ER combined' },
+      { label:'IPD Revenue', value:rupee(ipdTotal), sub: pct(ipTotal?ipdTotal/ipTotal:0) + ' of IP total' },
+      { label:'ER Revenue', value:rupee(erTotal), sub: pct(ipTotal?erTotal/ipTotal:0) + ' of IP total' },
+      { label:'IP Dept Billed Revenue', value:rupee(D.deptTotalRevenue), sub:'From IP Dept Analysis' }
+    ]);
+
+    mk('chartIPSplit', { type:'doughnut', data:{ labels:['IPD','ER'], datasets:[{ data:[ipdTotal, erTotal], backgroundColor:[PALETTE[0],PALETTE[7]], borderColor:surface(), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+rupee(ctx.parsed)+' ('+pct(ipTotal?ctx.parsed/ipTotal:0)+')'; } } } } } });
+
+    var labels = D.dates.map(fmtDate);
+    mk('chartIPDailyTrend', { type:'bar', data:{ labels:labels, datasets:[
+        { label:'IPD', data:ipd.values, backgroundColor:PALETTE[0], stack:'ip', borderRadius:2 },
+        { label:'ER', data:er.values, backgroundColor:PALETTE[7], stack:'ip', borderRadius:2 },
+        { type:'line', label:'IP Total', data:ipd.values.map(function(v,i){ return v + er.values[i]; }), borderColor:ink(), backgroundColor:ink(), borderWidth:2.5, pointRadius:2, tension:0, order:0 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+        scales:{ x:{ stacked:true, grid:{display:false}, ticks:{ color:ink2(), maxRotation:60, minRotation:60, autoSkip:true, maxTicksLimit:15 } },
+                 y:{ stacked:true, grid:{ color:grid() }, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } } } });
+  }
+
+  function renderOPOverview(D){
+    var opdE = D.dailyByKey.opdEven, opdN = D.dailyByKey.opdNonEven, pharm = D.dailyByKey.opPharmacy;
+    var opdTotal = opdE.total + opdN.total, pharmTotal = pharm.total, opTotal = opdTotal + pharmTotal;
+    var opDeptTotal = D.opDepts.reduce(function(a,d){ return a+d.revenue; },0);
+
+    var el = document.getElementById('opStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Total OP Revenue', value:rupee(opTotal), sub:'OPD + OP Pharmacy' },
+      { label:'OPD Consultation Revenue', value:rupee(opdTotal), sub: pct(opTotal?opdTotal/opTotal:0) + ' of OP total' },
+      { label:'OP Pharmacy Revenue', value:rupee(pharmTotal), sub: pct(opTotal?pharmTotal/opTotal:0) + ' of OP total' },
+      { label:'OP Departments Billed', value:rupee(opDeptTotal), sub: D.opDepts.length + ' clinical departments' }
+    ]);
+
+    mk('chartOPSplit', { type:'doughnut', data:{ labels:['OPD','OP Pharmacy'], datasets:[{ data:[opdTotal, pharmTotal], backgroundColor:[PALETTE[1],PALETTE[5]], borderColor:surface(), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+rupee(ctx.parsed)+' ('+pct(opTotal?ctx.parsed/opTotal:0)+')'; } } } } } });
+
+    var labels = D.dates.map(fmtDate);
+    mk('chartOPDailyTrend', { type:'bar', data:{ labels:labels, datasets:[
+        { label:'OPD-Even', data:opdE.values, backgroundColor:PALETTE[1], stack:'op', borderRadius:2 },
+        { label:'OPD-Non Even', data:opdN.values, backgroundColor:PALETTE[6], stack:'op', borderRadius:2 },
+        { label:'OP Pharmacy', data:pharm.values, backgroundColor:PALETTE[5], stack:'op', borderRadius:2 },
+        { type:'line', label:'OP Total', data:opdE.values.map(function(v,i){ return v + opdN.values[i] + pharm.values[i]; }), borderColor:ink(), backgroundColor:ink(), borderWidth:2.5, pointRadius:2, tension:0, order:0 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+        scales:{ x:{ stacked:true, grid:{display:false}, ticks:{ color:ink2(), maxRotation:60, minRotation:60, autoSkip:true, maxTicksLimit:15 } },
+                 y:{ stacked:true, grid:{ color:grid() }, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } } } });
+  }
+
+  function renderPulseOverview(D){
+    var evenM = D.dailyByKey.evenMember, nonEvenM = D.dailyByKey.nonEvenMember;
+    var evenTotal = evenM.total, nonEvenTotal = nonEvenM.total, pulseTotal = evenTotal + nonEvenTotal;
+    var grand = D.dailyByKey.grandTotal.total;
+
+    var el = document.getElementById('pulseStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Total Pulse Revenue', value:rupee(pulseTotal), sub: pct(grand?pulseTotal/grand:0) + ' of grand total' },
+      { label:'Even Member Revenue', value:rupee(evenTotal), sub: pct(pulseTotal?evenTotal/pulseTotal:0) + ' of Pulse' },
+      { label:'Non-Even Member Revenue', value:rupee(nonEvenTotal), sub: pct(pulseTotal?nonEvenTotal/pulseTotal:0) + ' of Pulse' },
+      { label:'Avg. Daily Pulse Revenue', value:rupee(pulseTotal / Math.max(D.dates.length,1)), sub:'Across the full period' }
+    ]);
+
+    mk('chartPulseSplit', { type:'doughnut', data:{ labels:['Even Member','Non-Even Member'], datasets:[{ data:[evenTotal, nonEvenTotal], backgroundColor:[PALETTE[4],PALETTE[5]], borderColor:surface(), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+rupee(ctx.parsed)+' ('+pct(pulseTotal?ctx.parsed/pulseTotal:0)+')'; } } } } } });
+
+    var labels = D.dates.map(fmtDate);
+    mk('chartPulseDailyTrend', { type:'bar', data:{ labels:labels, datasets:[
+        { label:'Even Member', data:evenM.values, backgroundColor:PALETTE[4], stack:'pulse', borderRadius:2 },
+        { label:'Non-Even Member', data:nonEvenM.values, backgroundColor:PALETTE[5], stack:'pulse', borderRadius:2 },
+        { type:'line', label:'Pulse Total', data:evenM.values.map(function(v,i){ return v + nonEvenM.values[i]; }), borderColor:ink(), backgroundColor:ink(), borderWidth:2.5, pointRadius:2, tension:0, order:0 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+        scales:{ x:{ stacked:true, grid:{display:false}, ticks:{ color:ink2(), maxRotation:60, minRotation:60, autoSkip:true, maxTicksLimit:15 } },
+                 y:{ stacked:true, grid:{ color:grid() }, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } } } });
+  }
+
+  function activeRange(vals){
+    var last = -1;
+    for (var i=0;i<vals.length;i++){ if (vals[i] > 0) last = i; }
+    return last;
+  }
+
+  function renderTrendsForecast(D){
+    var vals = D.dailyByKey.grandTotal.values;
+    var labels = D.dates.map(fmtDate);
+    var lastIdx = activeRange(vals);
+    var n = lastIdx + 1;
+    var sVals = vals.slice(0, n), sLabels = labels.slice(0, n);
+    var totalDays = D.dates.length || n;
+    var rr = computeRunRate(D);
+    var paceToDate = totalDays ? D.target * rr.elapsedDays / totalDays : 0;
+    var diff = rr.achieved - paceToDate;
+    var daysRemaining = Math.max(totalDays - rr.elapsedDays, 0);
+    var requiredDaily = daysRemaining ? Math.max(D.target - rr.achieved, 0) / daysRemaining : 0;
+
+    var el = document.getElementById('trendStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Projected Month-End', value:fmtShort(rr.projected), sub: pct(D.target?rr.projected/D.target:0) + ' of target', },
+      { label:'Days Remaining', value:daysRemaining + ' days', sub:'of ' + totalDays + ' in the period' },
+      { label:'Required Daily Pace', value:fmtShort(requiredDaily), sub:'per day to still hit target' },
+      { label: diff>=0 ? 'Ahead of Linear Pace' : 'Behind Linear Pace', value:fmtShort(Math.abs(diff)), sub: diff>=0 ? 'ahead of an even daily pace' : 'behind an even daily pace' }
+    ]);
+
+    var cum = 0;
+    var cumData = sVals.map(function(v){ cum += v; return cum; });
+    var paceLine = sVals.map(function(v,i){ return totalDays ? D.target * (i+1) / totalDays : 0; });
+    mk('chartCumulative', { type:'line', data:{ labels:sLabels, datasets:[
+        { label:'Cumulative Revenue', data:cumData, borderColor:PALETTE[0], backgroundColor:'rgba(28,114,147,.14)', fill:true, borderWidth:2.5, pointRadius:2, tension:.25 },
+        { label:'Linear Pace to Target', data:paceLine, borderColor:PALETTE[3], backgroundColor:'transparent', borderWidth:2, borderDash:[6,4], pointRadius:0, tension:0 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+        scales: Object.assign(baseGridOpts(), { y:{ grid:{ color:grid() }, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true } }) } });
+
+    var dod = sVals.map(function(v,i){ return (i>0 && sVals[i-1]>0) ? ((v-sVals[i-1])/sVals[i-1]*100) : null; });
+    mk('chartDoD', { type:'bar', data:{ labels:sLabels, datasets:[{ data:dod, backgroundColor: dod.map(function(v){ return v===null ? grid() : (v>=0?GOOD:CRIT); }), borderRadius:4, maxBarThickness:26 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return ctx.parsed.y===null? 'n/a' : ctx.parsed.y.toFixed(1)+'%'; } } } },
+      scales:{ x:{ grid:{display:false}, ticks:{ color:ink2(), maxRotation:60, minRotation:60, autoSkip:true, maxTicksLimit:12 } }, y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return v+'%';} } } } } });
+
+    var ma = sVals.map(function(v,i,arr){
+      var start = Math.max(0,i-2); var slice = arr.slice(start,i+1);
+      return slice.reduce(function(a,b){return a+b;},0)/slice.length;
+    });
+    mk('chartMA', { type:'line', data:{ labels:sLabels, datasets:[
+        { label:'Daily Revenue', data:sVals, borderColor:grid(), backgroundColor:'transparent', borderWidth:1.5, pointRadius:0, tension:.2 },
+        { label:'3-Day Moving Avg', data:ma, borderColor:PALETTE[2], backgroundColor:'rgba(244,163,0,.12)', fill:true, borderWidth:2.5, pointRadius:0, tension:.3 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+        scales: Object.assign(baseGridOpts(), { y:{ grid:{ color:grid() }, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true } }) } });
+  }
+
+  function renderARDeepDive(D){
+    var collPct = D.deptTotalRevenue ? D.deptTotalCollection/D.deptTotalRevenue : 0;
+    var el = document.getElementById('arStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Total Billed', value:rupee(D.deptTotalRevenue), sub:'IP Dept Analysis' },
+      { label:'Total Collected', value:rupee(D.deptTotalCollection), sub: pct(collPct) + ' collection efficiency' },
+      { label:'Total Pending', value:rupee(D.deptTotalPending), sub: pct(D.deptTotalRevenue?D.deptTotalPending/D.deptTotalRevenue:0) + ' of billed revenue' },
+      { label:'Departments Below 50% Collected', value:String(D.depts.filter(function(d){ return d.revenue>0 && (d.collection/d.revenue)<0.5; }).length), sub:'of ' + D.depts.filter(function(d){return d.revenue>0;}).length + ' earning departments' }
+    ]);
+
+    mk('chartARFunnel', { type:'bar', data:{ labels:['Billed','Collected','Pending'], datasets:[{ data:[D.deptTotalRevenue, D.deptTotalCollection, D.deptTotalPending], backgroundColor:[PALETTE[0],PALETTE[1],PALETTE[7]], borderRadius:6, maxBarThickness:46 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return rupee(ctx.parsed.x); } } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    var earners = D.depts.filter(function(d){ return d.revenue>0; });
+    var bands = [ {label:'0–25%',min:0,max:.25}, {label:'25–50%',min:.25,max:.5}, {label:'50–75%',min:.5,max:.75}, {label:'75–100%+',min:.75,max:Infinity} ];
+    var counts = bands.map(function(b){ return earners.filter(function(d){ var r = d.collection/d.revenue; return r>=b.min && r<b.max; }).length; });
+    mk('chartCollDist', { type:'bar', data:{ labels:bands.map(function(b){return b.label;}), datasets:[{ data:counts, backgroundColor:[CRIT,'#f4a300',PALETTE[6],GOOD], borderRadius:6, maxBarThickness:44 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return ctx.parsed.y + ' department(s)'; } } } },
+      scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), stepSize:1, precision:0 }, beginAtZero:true } }) } });
+
+    var topPending = sortDesc(D.depts,'pending').slice(0,10);
+    mk('chartTopPending', { type:'bar', data:{ labels:topPending.map(function(d){return d.name;}), datasets:[{ data:topPending.map(function(d){return d.pending;}), backgroundColor:PALETTE[7], borderRadius:5, maxBarThickness:20 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return rupee(ctx.parsed.x); } } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10.5} } } } } });
+  }
+
+  function renderDoctorDetail(D, name){
+    var el = document.getElementById('doctorDetailStats');
+    if (!el) return;
+    var d = D.doctors.filter(function(x){ return x.name===name; })[0];
+    if (!d){ el.innerHTML = ''; return; }
+    var ranked = sortDesc(D.doctors,'revenue');
+    var rank = ranked.findIndex(function(x){ return x.name===name; }) + 1;
+    el.innerHTML = miniStatsHTML([
+      { label:'Revenue Rank', value:'#'+rank+' of '+ranked.length, sub: d.speciality + ' · ' + d.association },
+      { label:'IP Revenue', value:rupee(d.revenue), sub: pct(d.pctRevenue||0) + ' of total doctor revenue' },
+      { label:'Discharges', value:String(d.discharges||0), sub:'ALOS ' + num(d.alos||0,2) + ' days' },
+      { label:'Collection', value:rupee(d.collection||0), sub: pct(d.collectionPct||0) + ' collected · ' + rupee(d.pending||0) + ' pending' },
+      { label:'Consumption', value:rupee(d.consumption||0), sub: pct(d.consumptionPct||0) + ' of revenue' },
+      { label:'Contribution', value:rupee(d.contribution||0), sub: pct(d.contributionPct||0) + ' margin' }
+    ]);
+  }
+
+  function renderDoctorTrends(D){
+    var all = D.doctors;
+    var active = all.filter(function(d){ return d.revenue>0; });
+    var totalDocRevenue = all.reduce(function(a,d){ return a+d.revenue; },0);
+    var top10Revenue = sortDesc(all,'revenue').slice(0,10).reduce(function(a,d){ return a+d.revenue; },0);
+
+    var el = document.getElementById('doctrendStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Total Doctors', value:String(all.length), sub: active.length + ' with billed revenue' },
+      { label:'Active Doctors', value:String(active.length), sub: pct(all.length?active.length/all.length:0) + ' of roster' },
+      { label:'Avg. Revenue / Active Doctor', value:fmtShort(active.length?totalDocRevenue/active.length:0), sub:'Across active doctors only' },
+      { label:'Top 10 Doctors’ Share', value:pct(totalDocRevenue?top10Revenue/totalDocRevenue:0), sub:'of total IP doctor revenue' }
+    ]);
+
+    var ranked = sortDesc(all,'revenue');
+    var sel = document.getElementById('doctorSelect');
+    if (sel){
+      sel.innerHTML = ranked.map(function(d){ return '<option value="'+d.name.replace(/"/g,'&quot;')+'">'+d.name+' — '+d.speciality+'</option>'; }).join('');
+      sel.onchange = function(){ renderDoctorDetail(LAST_DATA, sel.value); };
+      renderDoctorDetail(D, ranked.length ? ranked[0].name : null);
+    }
+
+    var bands = [ {label:'₹0',test:function(v){return v===0;}}, {label:'₹1 – 1L',test:function(v){return v>0&&v<100000;}}, {label:'₹1L – 5L',test:function(v){return v>=100000&&v<500000;}}, {label:'₹5L – 10L',test:function(v){return v>=500000&&v<1000000;}}, {label:'₹10L+',test:function(v){return v>=1000000;}} ];
+    var counts = bands.map(function(b){ return all.filter(function(d){ return b.test(d.revenue); }).length; });
+    mk('chartDoctorDist', { type:'bar', data:{ labels:bands.map(function(b){return b.label;}), datasets:[{ data:counts, backgroundColor:[CRIT,'#f4a300',PALETTE[6],PALETTE[1],GOOD], borderRadius:6, maxBarThickness:44 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return ctx.parsed.y + ' doctor(s)'; } } } },
+      scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), stepSize:1, precision:0 }, beginAtZero:true } }) } });
+
+    var top20 = sortDesc(all,'revenue').slice(0,20);
+    var cum = 0;
+    var cumPct = top20.map(function(d){ cum += d.revenue; return totalDocRevenue ? (cum/totalDocRevenue*100) : 0; });
+    mk('chartDoctorPareto', { data:{ labels:top20.map(function(d){return d.name;}), datasets:[
+        { type:'bar', label:'Revenue', data:top20.map(function(d){return d.revenue;}), backgroundColor:PALETTE[4], borderRadius:4, yAxisID:'y', order:1 },
+        { type:'line', label:'Cumulative %', data:cumPct, borderColor:PALETTE[2], backgroundColor:PALETTE[2], yAxisID:'y1', tension:.3, pointRadius:2, order:0 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false,
+        scales:{ x:{ grid:{display:false}, ticks:{ color:ink2(), display:false } },
+          y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } },
+          y1:{ position:'right', min:0, max:100, ticks:{ color:ink2(), callback:function(v){return v+'%';} }, grid:{display:false} } },
+        plugins:{ legend:legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label==='Cumulative %' ? ' Cumulative: '+ctx.parsed.y.toFixed(1)+'%' : ' '+top20[ctx.dataIndex].name+': '+rupee(ctx.parsed.y); } } } } } });
+
+    var bySpec = {};
+    all.forEach(function(d){
+      var k = d.speciality || 'Other';
+      if (!bySpec[k]) bySpec[k] = { active:0, zero:0 };
+      if (d.revenue>0) bySpec[k].active++; else bySpec[k].zero++;
+    });
+    var specKeys = Object.keys(bySpec).sort(function(a,b){ return (bySpec[b].active+bySpec[b].zero) - (bySpec[a].active+bySpec[a].zero); }).slice(0,12);
+    mk('chartDoctorActivity', { type:'bar', data:{ labels:specKeys, datasets:[
+        { label:'Active (billed)', data:specKeys.map(function(k){return bySpec[k].active;}), backgroundColor:GOOD, stack:'a', borderRadius:3 },
+        { label:'Zero revenue', data:specKeys.map(function(k){return bySpec[k].zero;}), backgroundColor:CRIT, stack:'a', borderRadius:3 }
+      ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+ctx.parsed.y; } } } },
+      scales:{ x:{ stacked:true, grid:{display:false}, ticks:{ color:ink2(), maxRotation:50, minRotation:30, font:{size:10} } }, y:{ stacked:true, grid:{color:grid()}, ticks:{ color:ink2(), stepSize:1, precision:0 } } } } });
+  }
+
+  function renderBenchmarks(D){
+    var el = document.getElementById('benchStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'ALOS', value:num(D.opMetrics.alos,2)+' days', sub:'Average length of stay' },
+      { label:'Occupancy %', value:pct(D.opMetrics.occupancy), sub: num(D.opMetrics.avgBeds,1)+' avg. occupied beds/day' },
+      { label:'ARPOB (Daily)', value:fmtShort(D.opMetrics.arpobDaily), sub:'Per occupied bed, per day' },
+      { label:'Avg. Bill / Discharge', value:fmtShort(D.deptTotalRevenue / Math.max(D.depts.reduce(function(a,d){return a+d.discharges;},0),1)), sub:'Across all IP discharges' }
+    ]);
+
+    var labels = D.dates.map(fmtDate);
+    var lastIdx = activeRange(D.opdRevenueSeries);
+    var n = lastIdx+1;
+    mk('chartOPDTrend', { type:'line', data:{ labels:labels.slice(0,n), datasets:[{ label:'OPD Revenue', data:D.opdRevenueSeries.slice(0,n), borderColor:PALETTE[1], backgroundColor:'rgba(22,163,74,.14)', fill:true, borderWidth:2.5, pointRadius:2, tension:.3 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return rupee(ctx.parsed.y); } } } },
+        scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true } }) } });
+
+    var withDischarges = D.depts.filter(function(d){ return d.discharges>0; });
+    var avgBill = sortDesc(withDischarges.map(function(d){ return { name:d.name, value: d.revenue/d.discharges }; }), 'value');
+    setBoxHeight('chartAvgBillValue', avgBill.length, 22, 320);
+    mk('chartAvgBillValue', { type:'bar', data:{ labels:avgBill.map(function(d){return d.name;}), datasets:[{ data:avgBill.map(function(d){return d.value;}), backgroundColor:PALETTE[6], borderRadius:5, maxBarThickness:20 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return rupee(ctx.parsed.x)+' per discharge'; } } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10.5} } } } } });
+
+    var maxGross = Math.max.apply(null, D.payerDiscount.map(function(p){return p.gross;}).concat([1]));
+    var pts = D.payerOperating.map(function(p,i){
+      var g = (D.payerDiscount[i] && D.payerDiscount[i].gross) || 0;
+      return { x:p.alos, y:p.arpob, r: 8 + (g/maxGross)*22, name:p.type };
+    });
+    mk('chartAlosArpobScatter', { type:'bubble', data:{ datasets:[{ data:pts,
+      backgroundColor: pts.map(function(p,i){ return PALETTE[i%PALETTE.length]+'cc'; }),
+      borderColor: pts.map(function(p,i){ return PALETTE[i%PALETTE.length]; }), borderWidth:1.5 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ var p=ctx.raw; return p.name+': '+num(p.x,2)+' days ALOS, '+rupee(p.y)+' ARPOB'; } } } },
+        scales:{ x:{ title:{display:true,text:'ALOS (days)',color:ink2()}, grid:{color:grid()}, ticks:{ color:ink2() }, beginAtZero:true },
+                 y:{ title:{display:true,text:'ARPOB',color:ink2()}, grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return fmtShort(v);} }, beginAtZero:true } } } });
+  }
+
+  function computeScorecard(D){
+    var earners = D.depts.filter(function(d){ return d.revenue>0; });
+    var maxRev = Math.max.apply(null, earners.map(function(d){return d.revenue;}).concat([1]));
+    var scored = earners.map(function(d){
+      var revenueNorm = d.revenue / maxRev;
+      var collComp = Math.min(d.revenue ? d.collection/d.revenue : 0, 1);
+      var contribComp = Math.min(Math.max(d.contributionPct,0),1);
+      var score = (0.4*revenueNorm + 0.3*collComp + 0.3*contribComp) * 100;
+      return { name:d.name, score:score, revenue:d.revenue, collPct:collComp, contribPct:d.contributionPct, alos:d.alos };
+    });
+    return scored.sort(function(a,b){ return b.score-a.score; });
+  }
+
+  function renderDeptDetail(D, name){
+    var el = document.getElementById('deptDetailStats');
+    if (!el) return;
+    var ranked = computeScorecard(D);
+    var r = ranked.filter(function(x){ return x.name===name; })[0];
+    if (!r){ el.innerHTML = ''; return; }
+    var rank = ranked.findIndex(function(x){ return x.name===name; }) + 1;
+    el.innerHTML = miniStatsHTML([
+      { label:'Composite Score', value:r.score.toFixed(1), sub:'Rank #'+rank+' of '+ranked.length },
+      { label:'Revenue', value:rupee(r.revenue), sub:'Billed this period' },
+      { label:'Collection %', value:pct(r.collPct), sub:'Of billed revenue' },
+      { label:'Contribution %', value:pct(r.contribPct), sub:'After consumption costs' },
+      { label:'ALOS', value:num(r.alos,2)+' days', sub:'Average length of stay' }
+    ]);
+  }
+
+  function renderScorecard(D){
+    var ranked = computeScorecard(D);
+    var avgScore = ranked.length ? ranked.reduce(function(a,r){return a+r.score;},0)/ranked.length : 0;
+
+    var el = document.getElementById('scorecardStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Top Scoring Department', value: ranked.length ? ranked[0].name : '—', sub: ranked.length ? 'Score ' + ranked[0].score.toFixed(1) : '' },
+      { label:'Average Score', value: avgScore.toFixed(1), sub:'Across ' + ranked.length + ' earning departments' },
+      { label:'Below Average', value: String(ranked.filter(function(r){return r.score<avgScore;}).length), sub:'Departments scoring under the mean' },
+      { label:'Lowest Scoring Department', value: ranked.length ? ranked[ranked.length-1].name : '—', sub: ranked.length ? 'Score ' + ranked[ranked.length-1].score.toFixed(1) : '' }
+    ]);
+
+    var sel = document.getElementById('deptSelect');
+    if (sel){
+      sel.innerHTML = ranked.map(function(r){ return '<option value="'+r.name.replace(/"/g,'&quot;')+'">'+r.name+' — Score '+r.score.toFixed(1)+'</option>'; }).join('');
+      sel.onchange = function(){ renderDeptDetail(LAST_DATA, sel.value); };
+      renderDeptDetail(D, ranked.length ? ranked[0].name : null);
+    }
+
+    var top15 = ranked.slice(0,15);
+    setBoxHeight('chartScorecard', top15.length, 20, 320);
+    mk('chartScorecard', { type:'bar', data:{ labels:top15.map(function(r){return r.name;}), datasets:[{ data:top15.map(function(r){return r.score;}), backgroundColor: top15.map(function(r){ return r.score>=70?GOOD:(r.score>=45?'#f4a300':CRIT); }), borderRadius:5, maxBarThickness:20 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return 'Score: '+ctx.parsed.x.toFixed(1); } } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2() }, min:0, max:100 }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10.5} } } } } });
+
+    var thead = '<thead><tr><th>Rank</th><th>Department</th><th class="num">Score</th><th class="num">Revenue</th><th class="num">Collection %</th><th class="num">Contribution %</th><th class="num">ALOS</th></tr></thead>';
+    var body = ranked.map(function(r,i){
+      return '<tr><td>'+(i+1)+'</td><td>'+r.name+'</td><td class="num"><b>'+r.score.toFixed(1)+'</b></td><td class="num">'+rupee(r.revenue)+'</td><td class="num">'+pct(r.collPct)+'</td><td class="num">'+pct(r.contribPct)+'</td><td class="num">'+num(r.alos,2)+'</td></tr>';
+    }).join('');
+    document.getElementById('scorecardTable').innerHTML = thead + '<tbody>'+body+'</tbody>';
+  }
+
+  function renderBoardBrief(D){
+    var rr = computeRunRate(D);
+    var collPct = D.deptTotalRevenue ? D.deptTotalCollection/D.deptTotalRevenue : 0;
+
+    var titleEl = document.getElementById('briefTitle');
+    if (titleEl) titleEl.textContent = (D.titlePeriod || 'Revenue Analysis') + ' — Board Brief';
+    var subEl = document.getElementById('briefSub');
+    if (subEl) subEl.textContent = D.dates.length + '-day period · generated ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+
+    var el = document.getElementById('briefStats');
+    if (el) el.innerHTML = miniStatsHTML([
+      { label:'Total IP Revenue', value:fmtShort(D.deptTotalRevenue), sub:'Collection ' + pct(collPct) },
+      { label:'Grand Total Revenue', value:fmtShort(D.dailyByKey.grandTotal.total), sub:'All channels, month-to-date' },
+      { label:'Projected Month-End', value:fmtShort(rr.projected), sub: pct(D.target?rr.projected/D.target:0) + ' of target' },
+      { label:'Total Pending', value:fmtShort(D.deptTotalPending), sub: pct(D.deptTotalRevenue?D.deptTotalPending/D.deptTotalRevenue:0) + ' of billed revenue' }
+    ]);
+
+    mk('chartBriefTarget', { type:'doughnut', data:{ labels:['Achieved','Remaining'], datasets:[{ data:[D.dailyByKey.grandTotal.total, Math.max(D.target-D.dailyByKey.grandTotal.total,0)], backgroundColor:[PALETTE[0], grid()], borderWidth:0 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+rupee(ctx.parsed); } } } } },
+      plugins:[{ id:'briefCenter', afterDraw:function(chart){
+        var ctx=chart.ctx, w=chart.width, h=chart.height;
+        ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font='800 16px system-ui'; ctx.fillStyle=ink();
+        ctx.fillText(pct(D.targetPct), w/2, h/2);
+        ctx.restore();
+      } }] });
+
+    var srcInsights = document.getElementById('insightList');
+    var briefInsights = document.getElementById('briefInsights');
+    if (briefInsights && srcInsights) briefInsights.innerHTML = srcInsights.innerHTML;
+
+    paintWatchlist('briefWatch', computeWatchlistRows(D), 4);
+  }
+
+  function renderDailyTrend(D){
+    var labels = D.dates.map(fmtDate);
+    var channelRows = D.dailyRows.filter(function(r){ return r.group !== null; });
+    var datasets = channelRows.map(function(r,i){
+      return { type:'bar', label:r.label, data:r.values, backgroundColor: PALETTE[i%PALETTE.length], stack:'d', borderRadius:2 };
+    });
+    datasets.push({ type:'line', label:'Grand Total', data:D.dailyByKey.grandTotal.values, borderColor: ink(), backgroundColor: ink(), borderWidth:2.5, pointRadius:3, tension:0, order:0 });
+    mk('chartDailyTrend', { type:'bar', data:{ labels:labels, datasets:datasets }, options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+      scales:{ x:{ stacked:true, grid:{display:false}, ticks:{ color:ink2(), maxRotation:60, minRotation:60, autoSkip:true, maxTicksLimit:15 } },
+               y:{ stacked:true, grid:{ color:grid() }, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } }
+    }});
+  }
+
+  function renderWeekday(D){
+    var buckets = [0,0,0,0,0,0,0], counts=[0,0,0,0,0,0,0];
+    var names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    D.dates.forEach(function(d,i){
+      if (!d) return;
+      var wd = d.getUTCDay();
+      var idx = wd===0?6:wd-1;
+      buckets[idx]+= D.dailyByKey.grandTotal.values[i];
+      counts[idx]++;
+    });
+    var avg = buckets.map(function(b,i){ return counts[i]? b/counts[i] : 0; });
+    mk('chartWeekday', { type:'bar', data:{ labels:names, datasets:[{ data:avg, backgroundColor: PALETTE[0], borderRadius:5, maxBarThickness:38 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.y);} } } },
+      scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } }) } });
+  }
+
+  function renderTarget(D){
+    var achieved = D.dailyByKey.grandTotal.total;
+    var remaining = Math.max(D.target - achieved, 0);
+    mk('chartTarget', {
+      type:'doughnut',
+      data:{ labels:['Achieved','Remaining'], datasets:[{ data:[achieved, remaining], backgroundColor:[PALETTE[0], grid()], borderWidth:0 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'72%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+rupee(ctx.parsed); } } } } },
+      plugins:[{
+        id:'centerText',
+        afterDraw:function(chart){
+          var ctx = chart.ctx; var w = chart.width, h = chart.height;
+          ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.font='800 22px system-ui'; ctx.fillStyle = ink();
+          ctx.fillText(pct(D.targetPct), w/2, h/2 - 6);
+          ctx.font='600 11px system-ui'; ctx.fillStyle = ink2();
+          ctx.fillText('of target', w/2, h/2 + 15);
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  function renderDailyTable(D){
+    var labels = D.dates.map(fmtDate);
+    var channelRows = D.dailyRows.filter(function(r){ return r.group !== null; });
+    var thead = '<thead><tr><th>Group</th><th>Particulars</th>' + labels.map(function(l){return '<th class="num">'+l+'</th>';}).join('') + '<th class="num">Grand Total</th></tr></thead>';
+    var groups = {};
+    channelRows.forEach(function(r){ (groups[r.group] = groups[r.group]||[]).push(r); });
+    var body = '';
+    Object.keys(groups).forEach(function(g){
+      groups[g].forEach(function(r,i){
+        body += '<tr>' + (i===0? '<td rowspan="'+groups[g].length+'"><b>'+g+'</b></td>' : '') + '<td>'+r.label+'</td>' +
+          r.values.map(function(v){ return '<td class="num">'+rupee(v)+'</td>'; }).join('') +
+          '<td class="num"><b>'+rupee(r.total)+'</b></td></tr>';
+      });
+    });
+    var gt = D.dailyByKey.grandTotal;
+    body += '<tr><td colspan="2">Grand Total</td>' + gt.values.map(function(v){return '<td class="num">'+rupee(v)+'</td>';}).join('') + '<td class="num">'+rupee(gt.total)+'</td></tr>';
+    document.getElementById('dailyTable').innerHTML = thead + '<tbody>'+body+'</tbody>';
+  }
+
+  function renderHeatmap(D){
+    var vals = D.dailyByKey.grandTotal.values;
+    var maxV = Math.max.apply(null, vals.concat([1]));
+    var steps = ['#e6eef5','#9fc4d8','#4b93b5','#1c7293'];
+    function colorFor(v){
+      if (!v) return '#eef1f6';
+      var r = v / maxV;
+      if (r < 0.25) return steps[0];
+      if (r < 0.5) return steps[1];
+      if (r < 0.75) return steps[2];
+      return steps[3];
+    }
+    function textFor(bg){
+      return (bg===steps[2]||bg===steps[3]) ? '#ffffff' : '#1a2130';
+    }
+    var html = D.dates.map(function(dt, i){
+      var v = vals[i];
+      var bg = colorFor(v);
+      var day = dt ? String(dt.getUTCDate()).padStart(2,'0') : '';
+      return '<div class="heat-cell" style="background:'+bg+';color:'+textFor(bg)+'">'+day+'<span class="amt">'+fmtDate(dt)+': '+rupee(v)+'</span></div>';
+    }).join('');
+    var el = document.getElementById('heatmap');
+    if (el) el.innerHTML = html;
+  }
+
+  function renderPayerMix(D){
+    var labels = D.payerDiscount.map(function(p){return p.type;});
+    var data = D.payerDiscount.map(function(p){return p.net;});
+    mk('chartPayerMix', { type:'doughnut', data:{ labels:labels, datasets:[{ data:data, backgroundColor:PALETTE, borderColor:surface(), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ var t=data.reduce(function(a,b){return a+b;},0); return ctx.label+': '+rupee(ctx.parsed)+' ('+pct(ctx.parsed/t)+')'; } } } } } });
+  }
+
+  function renderGrossNet(D){
+    var labels = D.payerDiscount.map(function(p){return p.type;});
+    mk('chartGrossNet', { type:'bar', data:{ labels:labels, datasets:[
+      { label:'Gross Bill', data:D.payerDiscount.map(function(p){return p.gross;}), backgroundColor:PALETTE[3], borderRadius:4 },
+      { label:'Discount', data:D.payerDiscount.map(function(p){return p.discount;}), backgroundColor:PALETTE[4], borderRadius:4 },
+      { label:'Net Bill', data:D.payerDiscount.map(function(p){return p.net;}), backgroundColor:PALETTE[0], borderRadius:4 }
+    ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+rupee(ctx.parsed.y); } } } },
+      scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } }) } });
+  }
+
+  function renderAlosPayer(D){
+    mk('chartAlosPayer', { type:'bar', data:{ labels:D.payerOperating.map(function(p){return p.type;}), datasets:[{ data:D.payerOperating.map(function(p){return p.alos;}), backgroundColor:PALETTE[2], borderRadius:5, maxBarThickness:32 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return num(ctx.parsed.x,2)+' days';} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2() }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+  }
+  function renderArpobPayer(D){
+    mk('chartArpobPayer', { type:'bar', data:{ labels:D.payerOperating.map(function(p){return p.type;}), datasets:[{ data:D.payerOperating.map(function(p){return p.arpob;}), backgroundColor:PALETTE[1], borderRadius:5, maxBarThickness:32 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+  }
+
+  function renderPayerCount(D){
+    mk('chartPayerCount', { type:'bar', data:{ labels:D.payerOperating.map(function(p){return p.type;}), datasets:[{ data:D.payerOperating.map(function(p){return p.count||0;}), backgroundColor:PALETTE[5], borderRadius:5, maxBarThickness:32 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return ctx.parsed.x+' discharges';} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), stepSize:1, precision:0 }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+  }
+
+  function renderKpiTrend(D){
+    var vals = D.dailyByKey.grandTotal.values;
+    var labels = D.dates.map(fmtDate);
+    var lastIdx = activeRange(vals);
+    var n = lastIdx+1;
+    mk('chartKpiTrend', { type:'line', data:{ labels:labels.slice(0,n), datasets:[{ label:'Daily Revenue', data:vals.slice(0,n), borderColor:PALETTE[0], backgroundColor:'rgba(28,114,147,.14)', fill:true, borderWidth:2.5, pointRadius:2, tension:.3 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ return rupee(ctx.parsed.y); } } } },
+        scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true } }) } });
+  }
+
+  function sortDesc(list, key){ return list.slice().sort(function(a,b){ return b[key]-a[key]; }); }
+  function setBoxHeight(canvasId, count, perItem, min){
+    var el = document.getElementById(canvasId);
+    if (!el || !el.parentElement) return;
+    el.parentElement.style.height = Math.max(min, count*perItem + 40) + 'px';
+  }
+
+  function renderDeptCharts(D){
+    var all = sortDesc(D.depts,'revenue');
+
+    setBoxHeight('chartDeptRevenue', all.length, 24, 320);
+    mk('chartDeptRevenue', { type:'bar', data:{ labels:all.map(function(d){return d.name;}), datasets:[{ data:all.map(function(d){return d.revenue;}), backgroundColor:PALETTE[0], borderRadius:5, maxBarThickness:20 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    setBoxHeight('chartDeptCollection', all.length, 26, 320);
+    mk('chartDeptCollection', { type:'bar', data:{ labels:all.map(function(d){return d.name;}), datasets:[
+      { label:'Collection', data:all.map(function(d){return d.collection;}), backgroundColor:PALETTE[0], borderRadius:4 },
+      { label:'Pending', data:all.map(function(d){return d.pending;}), backgroundColor:PALETTE[7], borderRadius:4 }
+    ]}, options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){return ctx.dataset.label+': '+rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ stacked:false, grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    setBoxHeight('chartDeptAlos', all.length, 22, 280);
+    mk('chartDeptAlos', { type:'bar', data:{ labels:all.map(function(d){return d.name;}), datasets:[{ data:all.map(function(d){return d.alos;}), backgroundColor:PALETTE[2], borderRadius:4, maxBarThickness:18 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return num(ctx.parsed.x,2)+' days';} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2() }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    setBoxHeight('chartDeptConsumption', all.length, 26, 280);
+    mk('chartDeptConsumption', { type:'bar', data:{ labels:all.map(function(d){return d.name;}), datasets:[
+      { label:'Consumption %', data:all.map(function(d){return d.consumptionPct*100;}), backgroundColor:PALETTE[3], borderRadius:4 },
+      { label:'Contribution %', data:all.map(function(d){return d.contributionPct*100;}), backgroundColor:PALETTE[2], borderRadius:4 }
+    ]}, options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.x.toFixed(1)+'%';} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return v+'%';} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    var thead = '<thead><tr><th>Department</th><th class="num">Discharges</th><th class="num">ALOS</th><th class="num">Revenue</th><th class="num">Collection</th><th class="num">Pending</th><th class="num">Consumption</th><th class="num">Consumption %</th><th class="num">Contribution</th><th class="num">Contribution %</th></tr></thead>';
+    var body = all.map(function(d){
+      return '<tr><td>'+d.name+'</td><td class="num">'+d.discharges+'</td><td class="num">'+num(d.alos,2)+'</td><td class="num">'+rupee(d.revenue)+'</td><td class="num">'+rupee(d.collection)+'</td><td class="num">'+rupee(d.pending)+'</td><td class="num">'+rupee(d.consumption)+'</td><td class="num">'+pct(d.consumptionPct)+'</td><td class="num">'+rupee(d.contribution)+'</td><td class="num">'+pct(d.contributionPct)+'</td></tr>';
+    }).join('');
+    var totRow = '<tr><td colspan="3">Grand Total ('+all.length+' departments)</td><td class="num">'+rupee(D.deptTotalRevenue)+'</td><td class="num">'+rupee(D.deptTotalCollection)+'</td><td class="num">'+rupee(D.deptTotalPending)+'</td><td colspan="4"></td></tr>';
+    document.getElementById('deptTable').innerHTML = thead + '<tbody>'+body+totRow+'</tbody>';
+
+    // Pareto: cumulative % of revenue by department (revenue-earning depts only, sorted desc)
+    var earners = all.filter(function(d){ return d.revenue>0; });
+    var cum = 0;
+    var cumPct = earners.map(function(d){ cum += d.revenue; return D.deptTotalRevenue ? (cum/D.deptTotalRevenue*100) : 0; });
+    setBoxHeight('chartDeptPareto', 0, 0, 300);
+    mk('chartDeptPareto', { data:{ labels:earners.map(function(d){return d.name;}), datasets:[
+      { type:'bar', label:'Revenue', data:earners.map(function(d){return d.revenue;}), backgroundColor:PALETTE[0], borderRadius:4, yAxisID:'y', order:1 },
+      { type:'line', label:'Cumulative %', data:cumPct, borderColor:PALETTE[2], backgroundColor:PALETTE[2], yAxisID:'y1', tension:.3, pointRadius:2, order:0 }
+    ]}, options:{ responsive:true, maintainAspectRatio:false,
+      scales:{ x:{ grid:{display:false}, ticks:{ color:ink2(), maxRotation:60, minRotation:45, font:{size:9.5} } },
+        y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } },
+        y1:{ position:'right', min:0, max:100, ticks:{ color:ink2(), callback:function(v){return v+'%';} }, grid:{display:false} } },
+      plugins:{ legend:legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label==='Cumulative %' ? ' Cumulative: '+ctx.parsed.y.toFixed(1)+'%' : ' Revenue: '+rupee(ctx.parsed.y); } } } } } });
+  }
+
+  function renderDoctorLeaderboard(D){
+    var all = sortDesc(D.doctors,'revenue');
+    var maxRev = all.length ? all[0].revenue : 1;
+    var medals = ['top1','top2','top3'];
+    document.getElementById('docLeaderboard').innerHTML = all.map(function(d,i){
+      var rankCls = i<3 ? medals[i] : '';
+      var countBit = d.discharges!==undefined ? '<span class="lb-sub"> · '+d.discharges+' discharges</span>' : '';
+      return '<div class="lb-row"><div class="lb-rank '+rankCls+'">'+(i+1)+'</div>'+
+        '<div class="lb-name">'+d.name+'<span class="lb-sub">'+d.speciality+countBit+'</span></div>'+
+        '<div class="lb-bar-track"><div class="lb-bar-fill" style="width:'+(maxRev?(d.revenue/maxRev*100).toFixed(1):0)+'%"></div></div>'+
+        '<div class="lb-value">'+rupee(d.revenue)+'</div></div>';
+    }).join('');
+  }
+
+  function renderDoctorCharts(D){
+    var all = sortDesc(D.doctors,'revenue');
+
+    renderDoctorLeaderboard(D);
+
+    setBoxHeight('chartDoctorRevenue', all.length, 16, 320);
+    mk('chartDoctorRevenue', { type:'bar', data:{ labels:all.map(function(d){return d.name;}), datasets:[{ data:all.map(function(d){return d.revenue;}), backgroundColor:PALETTE[4], borderRadius:5, maxBarThickness:14 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10} } } } } });
+
+    var keys = Object.keys(D.assocMix);
+    mk('chartDoctorAssoc', { type:'doughnut', data:{ labels:keys, datasets:[{ data:keys.map(function(k){return D.assocMix[k];}), backgroundColor:PALETTE, borderColor:surface(), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ var t=keys.reduce(function(a,k){return a+D.assocMix[k];},0); return ctx.label+': '+rupee(ctx.parsed)+' ('+pct(ctx.parsed/t)+')'; } } } } } });
+
+    var thead = '<thead><tr><th>Doctor</th><th>Speciality</th><th>Association</th><th class="num">Count</th><th class="num">Revenue</th></tr></thead>';
+    var body = all.map(function(d){
+      return '<tr><td>'+d.name+'</td><td>'+d.speciality+'</td><td>'+d.association+'</td><td class="num">'+(d.discharges||0)+'</td><td class="num">'+rupee(d.revenue)+'</td></tr>';
+    }).join('');
+    var tot = all.reduce(function(a,d){return a+d.revenue;},0);
+    var totCount = all.reduce(function(a,d){return a+(d.discharges||0);},0);
+    var totRow = '<tr><td colspan="3">Grand Total ('+all.length+' doctors)</td><td class="num">'+totCount+'</td><td class="num">'+rupee(tot)+'</td></tr>';
+    document.getElementById('doctorTable').innerHTML = thead + '<tbody>'+body+totRow+'</tbody>';
+  }
+
+  function renderPerfCharts(D){
+    var allOp = sortDesc(D.opDepts,'revenue');
+    setBoxHeight('chartOpDept', allOp.length, 20, 320);
+    mk('chartOpDept', { type:'bar', data:{ labels:allOp.map(function(d){return d.name;}), datasets:[{ data:allOp.map(function(d){return d.revenue;}), backgroundColor:PALETTE[2], borderRadius:5, maxBarThickness:18 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10.5} } } } } });
+
+    var allPay = sortDesc(D.payers,'revenue');
+    setBoxHeight('chartTopPayers', allPay.length, 24, 320);
+    mk('chartTopPayers', { type:'bar', data:{ labels:allPay.map(function(d){return d.name;}), datasets:[{ data:allPay.map(function(d){return d.revenue;}), backgroundColor:PALETTE[3], borderRadius:5, maxBarThickness:20 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    var totalPayerRevenue = allPay.reduce(function(a,p){return a+p.revenue;},0);
+    var totalPayerCases = allPay.reduce(function(a,p){return a+(p.count||0);},0);
+    var statsEl = document.getElementById('payerStats');
+    if (statsEl) statsEl.innerHTML = miniStatsHTML([
+      { label:'Total Payer Revenue', value:fmtShort(totalPayerRevenue), sub: allPay.length + ' payers' },
+      { label:'Total Case Count', value:String(totalPayerCases), sub:'Procedures billed, all payers' },
+      { label:'Avg. Revenue / Case', value:fmtShort(totalPayerCases?totalPayerRevenue/totalPayerCases:0), sub:'Across all payers' },
+      { label:'Top Payer', value: allPay.length?allPay[0].name:'—', sub: allPay.length?rupee(allPay[0].revenue)+' ('+(allPay[0].count||0)+' cases)':'' }
+    ]);
+
+    var byCases = sortDesc(allPay.filter(function(p){return (p.count||0)>0;}), 'count');
+    setBoxHeight('chartPayerCases', byCases.length, 24, 320);
+    mk('chartPayerCases', { type:'bar', data:{ labels:byCases.map(function(d){return d.name;}), datasets:[{ data:byCases.map(function(d){return d.count;}), backgroundColor:PALETTE[6], borderRadius:5, maxBarThickness:20 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return ctx.parsed.x+' case(s)';} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), stepSize:1, precision:0 }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2() } } } } });
+
+    var pthead = '<thead><tr><th>Payer</th><th>Type</th><th class="num">Case Count</th><th class="num">Revenue</th><th class="num">Avg. Revenue / Case</th></tr></thead>';
+    var pbody = allPay.map(function(p){
+      var avg = p.count ? p.revenue/p.count : 0;
+      return '<tr><td>'+p.name+'</td><td>'+p.type+'</td><td class="num">'+(p.count||0)+'</td><td class="num">'+rupee(p.revenue)+'</td><td class="num">'+rupee(avg)+'</td></tr>';
+    }).join('');
+    var ptotRow = '<tr><td colspan="2">Grand Total ('+allPay.length+' payers)</td><td class="num">'+totalPayerCases+'</td><td class="num">'+rupee(totalPayerRevenue)+'</td><td class="num">'+rupee(totalPayerCases?totalPayerRevenue/totalPayerCases:0)+'</td></tr>';
+    var payerTableEl = document.getElementById('payerTable');
+    if (payerTableEl) payerTableEl.innerHTML = pthead + '<tbody>'+pbody+ptotRow+'</tbody>';
+  }
+
+  function renderChannelMix(D){
+    var channels = [
+      { label:'IPD', value:D.dailyByKey.ipd.total },
+      { label:'ER', value:D.dailyByKey.er.total },
+      { label:'OP Pharmacy', value:D.dailyByKey.opPharmacy.total },
+      { label:'OPD', value:D.dailyByKey.opdEven.total + D.dailyByKey.opdNonEven.total },
+      { label:'Pulse', value:D.dailyByKey.evenMember.total + D.dailyByKey.nonEvenMember.total }
+    ];
+    var tot = channels.reduce(function(a,c){return a+c.value;},0);
+    mk('chartChannelMix', { type:'doughnut', data:{ labels:channels.map(function(c){return c.label;}), datasets:[{ data:channels.map(function(c){return c.value;}), backgroundColor:PALETTE, borderColor:surface(), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+        plugins:{ legend: legendOpts(true), tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+rupee(ctx.parsed)+' ('+pct(tot?ctx.parsed/tot:0)+')'; } } } } } });
+  }
+
+  function renderPayerCategory(D){
+    var byType = {};
+    D.payers.forEach(function(p){ var k = p.type || 'Other'; byType[k] = (byType[k]||0) + p.revenue; });
+    var keys = Object.keys(byType).sort(function(a,b){ return byType[b]-byType[a]; });
+    mk('chartPayerCategory', { type:'bar', data:{ labels:keys, datasets:[{ data:keys.map(function(k){return byType[k];}), backgroundColor:PALETTE, borderRadius:6, maxBarThickness:44 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.y);} } } },
+      scales: Object.assign(baseGridOpts(), { y:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} } } }) } });
+  }
+
+  function renderSpecialityRevenue(D){
+    var bySpec = {};
+    D.doctors.forEach(function(doc){ var k = doc.speciality || 'Other'; bySpec[k] = (bySpec[k]||0) + doc.revenue; });
+    var keys = Object.keys(bySpec).sort(function(a,b){ return bySpec[b]-bySpec[a]; }).slice(0,10);
+    mk('chartSpecialityRevenue', { type:'bar', data:{ labels:keys, datasets:[{ data:keys.map(function(k){return bySpec[k];}), backgroundColor:PALETTE[4], borderRadius:5, maxBarThickness:22 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return rupee(ctx.parsed.x);} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return rupee(v);} }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10.5} } } } } });
+  }
+
+  function renderDeptDischarges(D){
+    var all = sortDesc(D.depts.filter(function(d){ return d.discharges>0; }),'discharges').slice(0,12);
+    mk('chartDeptDischarges', { type:'bar', data:{ labels:all.map(function(d){return d.name;}), datasets:[{ data:all.map(function(d){return d.discharges;}), backgroundColor:PALETTE[2], borderRadius:5, maxBarThickness:22 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){return ctx.parsed.x+' discharges';} } } },
+      scales:{ x:{ grid:{color:grid()}, ticks:{ color:ink2() }, beginAtZero:true }, y:{ grid:{display:false}, ticks:{ color:ink2(), font:{size:10.5} } } } } });
+  }
+
+  function renderDeptEfficiency(D){
+    var earners = D.depts.filter(function(d){ return d.revenue>0; });
+    var maxRev = Math.max.apply(null, earners.map(function(d){return d.revenue;}).concat([1]));
+    var pts = earners.map(function(d){
+      return { x: d.revenue ? (d.collection/d.revenue*100) : 0, y: d.revenue, r: 6 + (d.revenue/maxRev)*24, name:d.name };
+    });
+    mk('chartDeptEfficiency', { type:'bubble', data:{ datasets:[{ data:pts,
+      backgroundColor: pts.map(function(p,i){ return PALETTE[i%PALETTE.length]+'cc'; }),
+      borderColor: pts.map(function(p,i){ return PALETTE[i%PALETTE.length]; }), borderWidth:1.5 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:legendOpts(false), tooltip:{ callbacks:{ label:function(ctx){ var p=ctx.raw; return p.name+': '+rupee(p.y)+' revenue, '+p.x.toFixed(1)+'% collected'; } } } },
+        scales:{ x:{ title:{display:true,text:'Collection %',color:ink2()}, grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return v+'%';} }, min:0 },
+                 y:{ title:{display:true,text:'Revenue',color:ink2()}, grid:{color:grid()}, ticks:{ color:ink2(), callback:function(v){return fmtShort(v);} }, beginAtZero:true } } } });
+  }
+
+  var LAST_DATA = null;
+
+  function renderAll(D){
+    LAST_DATA = D;
+    renderKPIs(D);
+    renderInsights(D);
+    renderHeroPulse(D);
+    renderWatchlist(D);
+    renderIPOverview(D);
+    renderOPOverview(D);
+    renderPulseOverview(D);
+    renderTrendsForecast(D);
+    renderARDeepDive(D);
+    renderDoctorTrends(D);
+    renderBenchmarks(D);
+    renderScorecard(D);
+    renderBoardBrief(D);
+    renderChannelMix(D);
+    renderPayerCategory(D);
+    renderSpecialityRevenue(D);
+    renderDeptDischarges(D);
+    renderDeptEfficiency(D);
+    renderDailyTrend(D);
+    renderWeekday(D);
+    renderTarget(D);
+    renderHeatmap(D);
+    renderDailyTable(D);
+    renderPayerMix(D);
+    renderGrossNet(D);
+    renderAlosPayer(D);
+    renderArpobPayer(D);
+    renderPayerCount(D);
+    renderKpiTrend(D);
+    renderDeptCharts(D);
+    renderDoctorCharts(D);
+    renderPerfCharts(D);
+  }
+
+  // ---------------------------------------------------------------
+  // Tabs
+  // ---------------------------------------------------------------
+  var tabbar = document.getElementById('tabbar');
+  var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+  var tabPanels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+
+  function resizeAllCharts(){
+    Object.keys(CH).forEach(function(id){ if (CH[id]) CH[id].resize(); });
+  }
+  function activateTab(name){
+    tabBtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-tab')===name); });
+    tabPanels.forEach(function(p){
+      var match = p.getAttribute('data-tab')===name;
+      p.hidden = !match;
+      if (match){ p.style.animation='none'; void p.offsetWidth; p.style.animation=''; }
+    });
+    requestAnimationFrame(function(){ requestAnimationFrame(resizeAllCharts); });
+  }
+  tabBtns.forEach(function(b){
+    b.addEventListener('click', function(){ activateTab(b.getAttribute('data-tab')); });
+  });
+
+  // ---------------------------------------------------------------
+  // File handling
+  // ---------------------------------------------------------------
+  function showError(msg){
+    var el = document.getElementById('uploadError');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function clearError(){
+    document.getElementById('uploadError').style.display = 'none';
+  }
+
+  function showData(D, filename, generatedLabel){
+    renderAll(D);
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('dash').hidden = false;
+    document.getElementById('tabbar').hidden = false;
+    document.getElementById('printBtn').hidden = false;
+    document.getElementById('pageFoot').hidden = false;
+    document.getElementById('uploadBtnLabel').textContent = 'Change file';
+    document.getElementById('brandTitle').textContent = D.titlePeriod || 'Revenue Analysis Dashboard';
+    document.getElementById('brandMeta').textContent = generatedLabel || ('Generated ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'}));
+    document.getElementById('footFile').textContent = filename;
+    var syncEl = document.getElementById('syncStatus');
+    syncEl.hidden = false;
+    document.getElementById('syncLabel').textContent = 'Data loaded — ' + D.dates.length + ' days';
+    activateTab('overview');
+  }
+
+  function handleFile(file){
+    clearError();
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var data = new Uint8Array(e.target.result);
+        var wb = XLSX.read(data, { type:'array', cellDates:true });
+        var D = parseWorkbook(wb);
+        showData(D, file.name);
+      }catch(err){
+        console.error(err);
+        showError(err.message || 'Could not read this file. Please upload the monthly Revenue Analysis workbook.');
+      }
+    };
+    reader.onerror = function(){ showError('Could not read this file.'); };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function loadEmbedded(){
+    if (!EMBEDDED_DATA) return;
+    try{
+      var D = EMBEDDED_DATA;
+      D.dates = D.dates.map(function(v){ return v ? new Date(v) : null; });
+      showData(D, EMBEDDED_FILENAME, 'Loaded from last uploaded workbook — upload today\'s file to refresh');
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  var uploadBtn = document.getElementById('uploadBtn');
+  var fi = document.getElementById('fileInput');
+  uploadBtn.addEventListener('click', function(){ fi.click(); });
+  fi.addEventListener('change', function(e){ handleFile(e.target.files[0]); });
+
+  // Optional convenience: dropping a file anywhere on the page also loads it
+  // (the only clickable upload control remains the top-left button).
+  ['dragenter','dragover'].forEach(function(evt){
+    window.addEventListener(evt, function(e){ e.preventDefault(); document.body.classList.add('dragging'); });
+  });
+  ['dragleave','drop'].forEach(function(evt){
+    window.addEventListener(evt, function(e){ e.preventDefault(); document.body.classList.remove('dragging'); });
+  });
+  window.addEventListener('drop', function(e){
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+
+  if (window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      if (LAST_DATA) renderAll(LAST_DATA);
+    });
+  }
+
+
+  // Auto-load the embedded month so the page opens with complete data already shown.
+  loadEmbedded();
+})();
+</script>
+
+
+
+</body>
+</html>
